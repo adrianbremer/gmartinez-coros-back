@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "liturgical_seasons",
+  "info": {
+    "singularName": "liturgical-season",
+    "pluralName": "liturgical-seasons",
+    "displayName": "Liturgical Season",
+    "description": "Tiempos litúrgicos del año eclesiástico"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "maxLength": 100,
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "start_date": {
+      "type": "date"
+    },
+    "end_date": {
+      "type": "date"
+    }
+  }
+}

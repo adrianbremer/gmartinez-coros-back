@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "vestments",
+  "info": {
+    "singularName": "vestment",
+    "pluralName": "vestments",
+    "displayName": "Vestment",
+    "description": "Tipos de vestimenta para eventos"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "maxLength": 100,
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "occasion": {
+      "type": "text"
+    }
+  }
+}

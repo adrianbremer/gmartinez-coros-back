@@ -1,0 +1,88 @@
+{
+  "kind": "collectionType",
+  "collectionName": "persons",
+  "info": {
+    "singularName": "person",
+    "pluralName": "persons",
+    "displayName": "Person",
+    "description": "Directorio completo de personas en el sistema"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "first_name": {
+      "type": "string",
+      "maxLength": 255,
+      "required": true
+    },
+    "middle_name": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "last_name": {
+      "type": "string",
+      "maxLength": 255,
+      "required": true
+    },
+    "last_name_2": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "birth_date": {
+      "type": "date"
+    },
+    "phone": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "email": {
+      "type": "email"
+    },
+    "photo": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "notes": {
+      "type": "text"
+    },
+    "administered_tenant": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::tenant.tenant",
+      "inversedBy": "administrator"
+    },
+    "user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "displayName": "User Account"
+    },
+    "contact_info": {
+      "type": "component",
+      "component": "contact.contact-info",
+      "repeatable": false
+    },
+    "emergency_contact": {
+      "type": "component",
+      "component": "contact.emergency-contact",
+      "repeatable": false
+    },
+    "is_active": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "choirs": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::choir.choir",
+      "mappedBy": "members"
+    }
+  }
+}

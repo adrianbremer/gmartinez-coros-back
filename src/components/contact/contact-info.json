@@ -1,0 +1,24 @@
+{
+    "collectionName": "components_contact_contact_infos",
+    "info": {
+        "displayName": "Contact Info",
+        "description": "Información de contacto adicional"
+    },
+    "options": {},
+    "attributes": {
+        "phone_2": {
+            "type": "string",
+            "maxLength": 20,
+            "displayName": "Secondary Phone"
+        },
+        "whatsapp": {
+            "type": "string",
+            "maxLength": 20,
+            "displayName": "WhatsApp"
+        },
+        "address": {
+            "type": "text",
+            "displayName": "Address"
+        }
+    }
+}

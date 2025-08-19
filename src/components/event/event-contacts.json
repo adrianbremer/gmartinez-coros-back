@@ -1,0 +1,30 @@
+{
+    "collectionName": "components_event_event_contacts",
+    "info": {
+        "displayName": "Event Contacts",
+        "description": "Contactos del evento"
+    },
+    "options": {},
+    "attributes": {
+        "contact_name": {
+            "type": "string",
+            "required": true,
+            "maxLength": 255,
+            "displayName": "Contact Name"
+        },
+        "contact_role": {
+            "type": "string",
+            "maxLength": 100,
+            "displayName": "Role"
+        },
+        "contact_phone": {
+            "type": "string",
+            "maxLength": 20,
+            "displayName": "Contact Phone"
+        },
+        "contact_email": {
+            "type": "email",
+            "displayName": "Contact Email"
+        }
+    }
+}

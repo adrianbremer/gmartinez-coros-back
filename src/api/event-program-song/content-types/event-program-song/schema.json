@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "event_program_songs",
+  "info": {
+    "singularName": "event-program-song",
+    "pluralName": "event-program-songs",
+    "displayName": "Event Program Song",
+    "description": "Canciones específicas en un programa con orden y detalles"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "performance_order": {
+      "type": "integer",
+      "required": true,
+      "min": 1,
+      "displayName": "Performance Order"
+    },
+    "special_notes": {
+      "type": "text",
+      "displayName": "Special Notes"
+    },
+    "event_program": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::event-program.event-program",
+      "inversedBy": "songs"
+    },
+    "song": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::song.song",
+      "displayName": "Song"
+    },
+    "liturgical_section": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::liturgical-section.liturgical-section",
+      "displayName": "Liturgical Section"
+    }
+  }
+}

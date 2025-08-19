@@ -1,0 +1,41 @@
+{
+    "name": "coffee-coros-back",
+    "version": "0.1.0",
+    "private": true,
+    "description": "A Strapi application",
+    "scripts": {
+        "build": "strapi build",
+        "console": "strapi console",
+        "deploy": "strapi deploy",
+        "dev": "strapi develop",
+        "develop": "strapi develop",
+        "seed:example": "node ./scripts/seed.js",
+        "seed:catalog": "node ./scripts/seed-catalog.js",
+        "update:labels": "node ./scripts/update-labels.js",
+        "start": "strapi start",
+        "strapi": "strapi",
+        "upgrade": "npx @strapi/upgrade latest",
+        "upgrade:dry": "npx @strapi/upgrade latest --dry"
+    },
+    "dependencies": {
+        "@strapi/plugin-cloud": "5.19.0",
+        "@strapi/plugin-users-permissions": "5.19.0",
+        "@strapi/strapi": "5.19.0",
+        "fs-extra": "^10.0.0",
+        "mime-types": "^2.1.27",
+        "mysql2": "3.9.8",
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
+        "react-router-dom": "^6.0.0",
+        "styled-components": "^6.0.0"
+    },
+    "devDependencies": {},
+    "engines": {
+        "node": ">=18.0.0 <=22.x.x",
+        "npm": ">=6.0.0"
+    },
+    "strapi": {
+        "uuid": "8e4fcc16-3780-49ee-863b-c4ca49dc47b3",
+        "installId": "29830af5e2c58e86cf5da82bfcf7590a755e23cc2d42025a7d3c4e20761ab906"
+    }
+}

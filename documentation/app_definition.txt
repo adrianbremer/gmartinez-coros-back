@@ -1,0 +1,78 @@
+Screens: Unless marked as (public) all screens require the user to be logged in.
+
+Authentication:
+- Login (public)
+- Password recovery (public)
+- User catalog (admin only)
+
+Catalogs:
+- Liturgical Sections
+- Liturgical Seasons
+- Vestments
+
+Core:
+- Choirs
+  - Choir list/grid view
+  - Choir details/edit form
+  - Choir member management
+  - Choir repertoire (songs assigned to choir)
+- Songs
+  - Song library/catalog
+  - Song details/edit form
+  - File attachments (lyrics, sheet music, backing tracks, recordings)
+  - Song liturgical sections and liturgical seasons assignment
+- Persons
+  - Person directory/catalog
+  - Person profile/edit form
+  - Contact information management
+  - Photo upload
+- Events
+  - Event calendar/list view
+  - Event details/edit form
+  - Event program builder (song selection and ordering)
+  - Venue and vestment requirements
+- Reports
+  - Upcoming events for choir
+  - Choir member directory
+  - Song usage statistics
+  - Event history
+
+Navigation Structure:
+- Dashboard (overview of upcoming events, recent activity)
+- Choirs
+  - My Choirs / All Choirs
+  - Choir Details
+    - Members tab
+    - Repertoire tab
+    - Events tab
+- Songs
+  - Song Library
+  - Song Details
+- People
+  - Directory
+  - Person Profile
+- Events
+  - Calendar
+  - Event Details
+- Reports
+- Catalogs (admin/superadmin only)
+  - Liturgical Sections
+  - Liturgical Seasons
+  - Vestments
+- Administration (admin/superadmin only)
+  - Users
+  - Tenant Settings (superadmin only)
+
+User Roles & Permissions:
+- SuperAdmin: Full system access across all tenants
+- Admin: Full access within their tenant
+- User: View and limited edit access within their tenant
+
+Key Features:
+- Multi-tenant architecture
+- File upload and management for songs
+- Drag-and-drop event program builder
+- Calendar integration for events
+- Search and filter capabilities across all entities
+- Responsive design for mobile and desktop
+- Print-friendly views for event programs and member lists

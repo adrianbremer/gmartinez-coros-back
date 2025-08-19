@@ -1,0 +1,55 @@
+{
+  "kind": "collectionType",
+  "collectionName": "choirs",
+  "info": {
+    "singularName": "choir",
+    "pluralName": "choirs",
+    "displayName": "Choir",
+    "description": "Gestión de coros y grupos musicales"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "maxLength": 255,
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "status": {
+      "type": "enumeration",
+      "required": true,
+      "default": "active",
+      "enum": [
+        "active",
+        "inactive"
+      ]
+    },
+    "contact_email": {
+      "type": "email"
+    },
+    "members": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::person.person",
+      "inversedBy": "choirs"
+    },
+    "event_programs": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::event-program.event-program",
+      "mappedBy": "choir"
+    },
+    "tenant": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::tenant.tenant",
+      "private": true,
+      "inversedBy": "choirs"
+    }
+  }
+}

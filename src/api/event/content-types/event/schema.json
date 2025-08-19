@@ -1,0 +1,56 @@
+{
+  "kind": "collectionType",
+  "collectionName": "events",
+  "info": {
+    "singularName": "event",
+    "pluralName": "events",
+    "displayName": "Event",
+    "description": "Gestión de eventos y celebraciones"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "maxLength": 255,
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "event_date": {
+      "type": "datetime",
+      "required": true
+    },
+    "venue": {
+      "type": "text"
+    },
+    "special_instructions": {
+      "type": "text"
+    },
+    "vestment_requirement": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::vestment.vestment",
+      "displayName": "Vestment Required"
+    },
+    "event_contacts": {
+      "type": "component",
+      "component": "event.event-contacts",
+      "repeatable": true
+    },
+    "is_active": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "event_programs": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::event-program.event-program",
+      "mappedBy": "event"
+    }
+  }
+}

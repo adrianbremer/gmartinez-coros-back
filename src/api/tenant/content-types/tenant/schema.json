@@ -1,0 +1,48 @@
+{
+  "kind": "collectionType",
+  "collectionName": "tenants",
+  "info": {
+    "singularName": "tenant",
+    "pluralName": "tenants",
+    "displayName": "Tenant",
+    "description": "Gestión multi-inquilino para aislar datos de diferentes organizaciones"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "pluginOptions": {
+        "i18n": {
+          "localized": false
+        }
+      },
+      "maxLength": 255,
+      "required": true,
+      "unique": true
+    },
+    "administrator": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::person.person",
+      "mappedBy": "administered_tenant"
+    },
+    "settings": {
+      "type": "json"
+    },
+    "is_active": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "choirs": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::choir.choir",
+      "private": true,
+      "mappedBy": "tenant"
+    }
+  }
+}
