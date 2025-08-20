@@ -1,30 +1,35 @@
-# Robust Dockerfile for Strapi (Debian-based, handles native bindings like sharp and swc)
 FROM node:20
 
-# Install build requirements for native modules (node-gyp)
+# Install build requirements for native modules
 RUN apt-get update && apt-get install -y \
-		g++ \
-		make \
-		python3 \
-	&& rm -rf /var/lib/apt/lists/*
+    g++ \
+    make \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
 
-# App dir
 WORKDIR /opt/app
 
-# Copy package manifests (use lockfile for exact versions)
+# Copy package files
 COPY package*.json ./
 
-# Install exact dependencies from lockfile and rebuild native modules for this OS/arch
-ENV npm_config_loglevel=info
+# Install dependencies and rebuild native modules regardless of environment
 RUN npm ci && npm rebuild sharp @swc/core || true
 
 # Copy source
 COPY . .
 
-# Build admin and prune devDeps in the same layer to keep image smaller
-ENV NODE_ENV=production
-RUN npm run build && npm prune --production && mkdir -p public/uploads
+# Conditional build based on NODE_ENV
+ARG NODE_ENV=production
+ENV NODE_ENV=$NODE_ENV
+
+# Always rebuild native modules, but only build admin and prune if production
+RUN if [ "$NODE_ENV" = "production" ]; then \
+        npm run build && npm prune --production; \
+    fi
+
+# Create uploads directory
+RUN mkdir -p public/uploads
 
 # Runtime
 EXPOSE 1337
-CMD ["npm", "start"]
+CMD ["sh", "-c", "if [ \"$NODE_ENV\" = \"production\" ]; then npm start; else npm run develop; fi"]
