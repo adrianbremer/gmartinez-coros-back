@@ -1,5 +1,5 @@
 {
-    "name": "coffee-coros-back",
+    "name": "gmartinez-coros-back",
     "version": "0.1.0",
     "private": true,
     "description": "A Strapi application",
@@ -37,5 +37,14 @@
     "strapi": {
         "uuid": "8e4fcc16-3780-49ee-863b-c4ca49dc47b3",
         "installId": "29830af5e2c58e86cf5da82bfcf7590a755e23cc2d42025a7d3c4e20761ab906"
+    },
+    "overrides": {
+        "@strapi/admin": "5.19.0",
+        "@strapi/content-manager": "5.19.0",
+        "@strapi/content-type-builder": "5.19.0",
+        "@strapi/email": "5.19.0",
+        "@strapi/strapi": "5.19.0",
+        "@strapi/plugin-users-permissions": "5.19.0",
+        "@strapi/plugin-cloud": "5.19.0"
     }
 }

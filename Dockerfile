@@ -1,23 +1,30 @@
-# Use Node.js LTS version
-FROM node:18-alpine
+# Robust Dockerfile for Strapi (Debian-based, handles native bindings like sharp and swc)
+FROM node:20
 
-# Set working directory
+# Install build requirements for native modules (node-gyp)
+RUN apt-get update && apt-get install -y \
+		g++ \
+		make \
+		python3 \
+	&& rm -rf /var/lib/apt/lists/*
+
+# App dir
 WORKDIR /opt/app
 
-# Copy package files
+# Copy package manifests (use lockfile for exact versions)
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install exact dependencies from lockfile and rebuild native modules for this OS/arch
+ENV npm_config_loglevel=info
+RUN npm ci && npm rebuild sharp @swc/core || true
 
-# Copy source code
+# Copy source
 COPY . .
 
-# Create uploads directory and build the application
-RUN mkdir -p public/uploads && npm run build
+# Build admin and prune devDeps in the same layer to keep image smaller
+ENV NODE_ENV=production
+RUN npm run build && npm prune --production && mkdir -p public/uploads
 
-# Expose port
+# Runtime
 EXPOSE 1337
-
-# Start the application
 CMD ["npm", "start"]
