@@ -21,8 +21,9 @@ COPY . .
 # Debug: Check src folder before build
 RUN echo "=== BEFORE BUILD ===" && ls -la && echo "=== SRC FOLDER CONTENTS ===" && ls -la src/ || echo "src folder missing before build"
 
-# Set NODE_ENV - will be overridden by Coolify environment variables
-ENV NODE_ENV=production
+# Accept build argument for NODE_ENV
+ARG NODE_ENV=production
+ENV NODE_ENV=$NODE_ENV
 
 # Debug: Show NODE_ENV value
 RUN echo "=== NODE_ENV is: $NODE_ENV ==="
