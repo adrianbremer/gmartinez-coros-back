@@ -15,8 +15,14 @@ COPY package*.json ./
 # Install dependencies and rebuild native modules regardless of environment
 RUN npm ci && npm rebuild sharp @swc/core || true
 
+# Debug: Check what's in the directory before copying source
+RUN echo "=== BEFORE COPYING SOURCE ===" && ls -la
+
 # Copy source
 COPY . .
+
+# Debug: Check src folder immediately after copy
+RUN echo "=== IMMEDIATELY AFTER COPY ===" && ls -la && echo "=== SRC FOLDER CONTENTS ===" && ls -la src/ || echo "src folder missing after copy"
 
 # Debug: Check src folder before build
 RUN echo "=== BEFORE BUILD ===" && ls -la && echo "=== SRC FOLDER CONTENTS ===" && ls -la src/ || echo "src folder missing before build"
