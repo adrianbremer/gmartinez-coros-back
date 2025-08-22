@@ -24,8 +24,8 @@ module.exports = {
         },
         {
             method: 'GET',
-            path: '/debug/files/:filePath*',
-            handler: 'debug.getFileContent',
+            path: '/debug/download-all-schemas',
+            handler: 'debug.downloadAllSchemas',
             config: {
                 auth: false,
                 policies: [],
@@ -44,8 +44,8 @@ module.exports = {
         },
         {
             method: 'GET',
-            path: '/debug/download-all-schemas',
-            handler: 'debug.downloadAllSchemas',
+            path: '/debug/files/:filePath*',
+            handler: 'debug.getFileContent',
             config: {
                 auth: false,
                 policies: [],
