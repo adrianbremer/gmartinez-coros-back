@@ -5,6 +5,81 @@ const path = require('path');
 const archiver = require('archiver');
 
 module.exports = {
+    async healthCheck(ctx) {
+        try {
+            const healthData = {
+                status: 'healthy',
+                timestamp: new Date().toISOString(),
+                uptime: process.uptime(),
+                memory: process.memoryUsage(),
+                environment: process.env.NODE_ENV || 'development',
+                version: process.version,
+                platform: process.platform,
+                services: {}
+            };
+
+            // Check database connectivity
+            try {
+                const dbStatus = await strapi.db.connection.raw('SELECT 1');
+                healthData.services.database = {
+                    status: 'connected',
+                    type: strapi.db.connection.client.config.client
+                };
+            } catch (dbError) {
+                healthData.services.database = {
+                    status: 'error',
+                    error: dbError.message
+                };
+                healthData.status = 'degraded';
+            }
+
+            // Check file system access
+            try {
+                const srcPath = path.join(process.cwd(), 'src');
+                const stats = fs.statSync(srcPath);
+                healthData.services.filesystem = {
+                    status: 'accessible',
+                    srcPath: srcPath,
+                    srcExists: stats.isDirectory()
+                };
+            } catch (fsError) {
+                healthData.services.filesystem = {
+                    status: 'error',
+                    error: fsError.message
+                };
+                healthData.status = 'degraded';
+            }
+
+            // Check Strapi services
+            try {
+                const strapiVersion = strapi.config.get('info.version');
+                healthData.services.strapi = {
+                    status: 'running',
+                    version: strapiVersion
+                };
+            } catch (strapiError) {
+                healthData.services.strapi = {
+                    status: 'error',
+                    error: strapiError.message
+                };
+                healthData.status = 'degraded';
+            }
+
+            // Set response status based on overall health
+            const statusCode = healthData.status === 'healthy' ? 200 : 503;
+            ctx.status = statusCode;
+            ctx.body = healthData;
+
+        } catch (error) {
+            ctx.status = 500;
+            ctx.body = {
+                status: 'unhealthy',
+                timestamp: new Date().toISOString(),
+                error: error.message
+            };
+        }
+    },
+
     async getFileStructure(ctx) {
         try {
             const srcPath = path.join(process.cwd(), 'src');
