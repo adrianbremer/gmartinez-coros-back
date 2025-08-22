@@ -385,6 +385,7 @@ export interface ApiChoirChoir extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    cantos: Schema.Attribute.Relation<'oneToMany', 'api::song.song'>;
     contact_email: Schema.Attribute.Email;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -404,6 +405,10 @@ export interface ApiChoirChoir extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    vestimentas: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::vestment.vestment'
+    >;
   };
 }
 
@@ -424,7 +429,7 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
-    event_contacts: Schema.Attribute.Component<'event.event-contacts', true>;
+    event_contact: Schema.Attribute.Component<'event.event-contacts', false>;
     event_date: Schema.Attribute.DateTime & Schema.Attribute.Required;
     is_active: Schema.Attribute.Boolean &
       Schema.Attribute.Required &
@@ -432,6 +437,8 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::event.event'> &
       Schema.Attribute.Private;
+    location: Schema.Attribute.JSON &
+      Schema.Attribute.CustomField<'plugin::google-maps.location-picker'>;
     name: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -443,7 +450,7 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    venue: Schema.Attribute.Text;
+    venue: Schema.Attribute.String;
     vestment_requirement: Schema.Attribute.Relation<
       'manyToOne',
       'api::vestment.vestment'
@@ -628,6 +635,7 @@ export interface ApiSongSong extends Struct.CollectionTypeSchema {
   };
   attributes: {
     backing_track_file: Schema.Attribute.Media<'audios'>;
+    coro: Schema.Attribute.Relation<'manyToOne', 'api::choir.choir'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -665,6 +673,7 @@ export interface ApiVestmentVestment extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    coro: Schema.Attribute.Relation<'manyToOne', 'api::choir.choir'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -775,6 +784,50 @@ export interface PluginContentReleasesReleaseAction
     >;
     type: Schema.Attribute.Enumeration<['publish', 'unpublish']> &
       Schema.Attribute.Required;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface PluginGoogleMapsConfig extends Struct.SingleTypeSchema {
+  collectionName: 'google_maps_configs';
+  info: {
+    displayName: 'Google Maps Config';
+    pluralName: 'configs';
+    singularName: 'config';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  pluginOptions: {
+    'content-manager': {
+      visible: false;
+    };
+    'content-type-builder': {
+      visible: false;
+    };
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    defaultLatitude: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<''>;
+    defaultLongitude: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<''>;
+    googleMapsKey: Schema.Attribute.String &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<''>;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'plugin::google-maps.config'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1207,6 +1260,7 @@ declare module '@strapi/strapi' {
       'api::vestment.vestment': ApiVestmentVestment;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
+      'plugin::google-maps.config': PluginGoogleMapsConfig;
       'plugin::i18n.locale': PluginI18NLocale;
       'plugin::review-workflows.workflow': PluginReviewWorkflowsWorkflow;
       'plugin::review-workflows.workflow-stage': PluginReviewWorkflowsWorkflowStage;

@@ -19,29 +19,6 @@ export interface ContactContactInfo extends Struct.ComponentSchema {
   };
 }
 
-export interface ContactEmergencyContact extends Struct.ComponentSchema {
-  collectionName: 'components_contact_emergency_contacts';
-  info: {
-    description: 'Contacto de emergencia';
-    displayName: 'Emergency Contact';
-  };
-  attributes: {
-    name: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 255;
-      }>;
-    phone: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 20;
-      }>;
-    relationship: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 100;
-      }>;
-  };
-}
-
 export interface EventCantoEntry extends Struct.ComponentSchema {
   collectionName: 'components_event_canto_entry';
   info: {
@@ -50,7 +27,10 @@ export interface EventCantoEntry extends Struct.ComponentSchema {
     icon: 'music';
   };
   attributes: {
-    notes: Schema.Attribute.Text;
+    notes: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
     performance_order: Schema.Attribute.Integer &
       Schema.Attribute.SetMinMax<
         {
@@ -153,7 +133,6 @@ declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
       'contact.contact-info': ContactContactInfo;
-      'contact.emergency-contact': ContactEmergencyContact;
       'event.canto-entry': EventCantoEntry;
       'event.event-contacts': EventEventContacts;
       'shared.media': SharedMedia;

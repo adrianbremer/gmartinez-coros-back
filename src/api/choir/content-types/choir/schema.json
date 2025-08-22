@@ -31,6 +31,18 @@
     },
     "is_active": {
       "type": "boolean"
+    },
+    "vestimentas": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::vestment.vestment",
+      "mappedBy": "coro"
+    },
+    "cantos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::song.song",
+      "mappedBy": "coro"
     }
   }
 }

@@ -22,6 +22,12 @@
     },
     "occasion": {
       "type": "text"
+    },
+    "coro": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::choir.choir",
+      "inversedBy": "vestimentas"
     }
   }
 }

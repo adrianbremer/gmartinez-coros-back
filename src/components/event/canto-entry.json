@@ -15,7 +15,8 @@
             "displayName": "Song"
         },
         "notes": {
-            "type": "text",
+            "type": "string",
+            "maxLength": 255,
             "displayName": "Notes",
             "description": "Additional notes for this song in this event"
         },
