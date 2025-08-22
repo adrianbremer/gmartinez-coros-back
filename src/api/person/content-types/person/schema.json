@@ -4,7 +4,7 @@
   "info": {
     "singularName": "person",
     "pluralName": "persons",
-    "displayName": "Person",
+    "displayName": "Persona",
     "description": "Directorio completo de personas en el sistema"
   },
   "options": {
@@ -51,27 +51,11 @@
     "notes": {
       "type": "text"
     },
-    "administered_tenant": {
-      "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::tenant.tenant",
-      "inversedBy": "administrator"
-    },
     "user": {
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
       "displayName": "User Account"
-    },
-    "contact_info": {
-      "type": "component",
-      "component": "contact.contact-info",
-      "repeatable": false
-    },
-    "emergency_contact": {
-      "type": "component",
-      "component": "contact.emergency-contact",
-      "repeatable": false
     },
     "is_active": {
       "type": "boolean",

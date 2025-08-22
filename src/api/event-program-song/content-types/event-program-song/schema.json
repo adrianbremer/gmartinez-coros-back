@@ -15,18 +15,10 @@
     "performance_order": {
       "type": "integer",
       "required": true,
-      "min": 1,
-      "displayName": "Performance Order"
+      "min": 1
     },
     "special_notes": {
-      "type": "text",
-      "displayName": "Special Notes"
-    },
-    "event_program": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "api::event-program.event-program",
-      "inversedBy": "songs"
+      "type": "text"
     },
     "song": {
       "type": "relation",

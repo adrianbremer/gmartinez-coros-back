@@ -4,7 +4,7 @@
   "info": {
     "singularName": "event",
     "pluralName": "events",
-    "displayName": "Event",
+    "displayName": "Evento",
     "description": "Gestión de eventos y celebraciones"
   },
   "options": {
@@ -46,11 +46,14 @@
       "required": true,
       "default": true
     },
-    "event_programs": {
+    "program_notes": {
+      "type": "text"
+    },
+    "cantos": {
       "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::event-program.event-program",
-      "mappedBy": "event"
+      "relation": "manyToMany",
+      "target": "api::song.song",
+      "mappedBy": "eventos"
     }
   }
 }

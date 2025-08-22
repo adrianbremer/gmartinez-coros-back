@@ -4,7 +4,7 @@
   "info": {
     "singularName": "song",
     "pluralName": "songs",
-    "displayName": "Song",
+    "displayName": "Canto",
     "description": "Biblioteca de canciones con archivos adjuntos"
   },
   "options": {
@@ -56,6 +56,12 @@
       "type": "boolean",
       "required": true,
       "default": true
+    },
+    "eventos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::event.event",
+      "inversedBy": "cantos"
     }
   }
 }

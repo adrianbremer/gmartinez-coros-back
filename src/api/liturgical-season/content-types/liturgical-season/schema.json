@@ -4,7 +4,7 @@
   "info": {
     "singularName": "liturgical-season",
     "pluralName": "liturgical-seasons",
-    "displayName": "Liturgical Season",
+    "displayName": "Tiempo liturgico",
     "description": "Tiempos litúrgicos del año eclesiástico"
   },
   "options": {
@@ -19,12 +19,6 @@
     },
     "description": {
       "type": "text"
-    },
-    "start_date": {
-      "type": "date"
-    },
-    "end_date": {
-      "type": "date"
     }
   }
 }

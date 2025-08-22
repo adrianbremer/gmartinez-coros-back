@@ -377,7 +377,7 @@ export interface ApiChoirChoir extends Struct.CollectionTypeSchema {
   collectionName: 'choirs';
   info: {
     description: 'Gesti\u00F3n de coros y grupos musicales';
-    displayName: 'Choir';
+    displayName: 'Coro';
     pluralName: 'choirs';
     singularName: 'choir';
   };
@@ -390,10 +390,7 @@ export interface ApiChoirChoir extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
-    event_programs: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::event-program.event-program'
-    >;
+    is_active: Schema.Attribute.Boolean;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::choir.choir'> &
       Schema.Attribute.Private;
@@ -404,11 +401,6 @@ export interface ApiChoirChoir extends Struct.CollectionTypeSchema {
         maxLength: 255;
       }>;
     publishedAt: Schema.Attribute.DateTime;
-    status: Schema.Attribute.Enumeration<['active', 'inactive']> &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<'active'>;
-    tenant: Schema.Attribute.Relation<'manyToOne', 'api::tenant.tenant'> &
-      Schema.Attribute.Private;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -431,10 +423,6 @@ export interface ApiEventProgramSongEventProgramSong
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    event_program: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::event-program.event-program'
-    >;
     liturgical_section: Schema.Attribute.Relation<
       'manyToOne',
       'api::liturgical-section.liturgical-section'
@@ -462,52 +450,11 @@ export interface ApiEventProgramSongEventProgramSong
   };
 }
 
-export interface ApiEventProgramEventProgram
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'event_programs';
-  info: {
-    description: 'Programa musical de un coro para un evento espec\u00EDfico';
-    displayName: 'Event Program';
-    pluralName: 'event-programs';
-    singularName: 'event-program';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    choir: Schema.Attribute.Relation<'manyToOne', 'api::choir.choir'>;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    event: Schema.Attribute.Relation<'manyToOne', 'api::event.event'>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::event-program.event-program'
-    > &
-      Schema.Attribute.Private;
-    name: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 255;
-      }>;
-    notes: Schema.Attribute.Text;
-    publishedAt: Schema.Attribute.DateTime;
-    rehearsal_notes: Schema.Attribute.Text;
-    songs: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::event-program-song.event-program-song'
-    >;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiEventEvent extends Struct.CollectionTypeSchema {
   collectionName: 'events';
   info: {
     description: 'Gesti\u00F3n de eventos y celebraciones';
-    displayName: 'Event';
+    displayName: 'Evento';
     pluralName: 'events';
     singularName: 'event';
   };
@@ -515,16 +462,13 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    cantos: Schema.Attribute.Relation<'manyToMany', 'api::song.song'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
     event_contacts: Schema.Attribute.Component<'event.event-contacts', true>;
     event_date: Schema.Attribute.DateTime & Schema.Attribute.Required;
-    event_programs: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::event-program.event-program'
-    >;
     is_active: Schema.Attribute.Boolean &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<true>;
@@ -536,6 +480,7 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 255;
       }>;
+    program_notes: Schema.Attribute.Text;
     publishedAt: Schema.Attribute.DateTime;
     special_instructions: Schema.Attribute.Text;
     updatedAt: Schema.Attribute.DateTime;
@@ -586,7 +531,7 @@ export interface ApiLiturgicalSeasonLiturgicalSeason
   collectionName: 'liturgical_seasons';
   info: {
     description: 'Tiempos lit\u00FArgicos del a\u00F1o eclesi\u00E1stico';
-    displayName: 'Liturgical Season';
+    displayName: 'Tiempo liturgico';
     pluralName: 'liturgical-seasons';
     singularName: 'liturgical-season';
   };
@@ -598,7 +543,6 @@ export interface ApiLiturgicalSeasonLiturgicalSeason
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
-    end_date: Schema.Attribute.Date;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -611,7 +555,6 @@ export interface ApiLiturgicalSeasonLiturgicalSeason
         maxLength: 100;
       }>;
     publishedAt: Schema.Attribute.DateTime;
-    start_date: Schema.Attribute.Date;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -623,7 +566,7 @@ export interface ApiLiturgicalSectionLiturgicalSection
   collectionName: 'liturgical_sections';
   info: {
     description: 'Momentos lit\u00FArgicos (Entrada, Gloria, Ofertorio, etc.)';
-    displayName: 'Liturgical Section';
+    displayName: 'Tiempo de celebracion';
     pluralName: 'liturgical-sections';
     singularName: 'liturgical-section';
   };
@@ -635,7 +578,6 @@ export interface ApiLiturgicalSectionLiturgicalSection
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
-    is_required: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -647,14 +589,6 @@ export interface ApiLiturgicalSectionLiturgicalSection
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 100;
       }>;
-    order_sequence: Schema.Attribute.Integer &
-      Schema.Attribute.SetMinMax<
-        {
-          max: 50;
-          min: 1;
-        },
-        number
-      >;
     publishedAt: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -666,7 +600,7 @@ export interface ApiPersonPerson extends Struct.CollectionTypeSchema {
   collectionName: 'persons';
   info: {
     description: 'Directorio completo de personas en el sistema';
-    displayName: 'Person';
+    displayName: 'Persona';
     pluralName: 'persons';
     singularName: 'person';
   };
@@ -674,21 +608,12 @@ export interface ApiPersonPerson extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    administered_tenant: Schema.Attribute.Relation<
-      'oneToOne',
-      'api::tenant.tenant'
-    >;
     birth_date: Schema.Attribute.Date;
     choirs: Schema.Attribute.Relation<'manyToMany', 'api::choir.choir'>;
-    contact_info: Schema.Attribute.Component<'contact.contact-info', false>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     email: Schema.Attribute.Email;
-    emergency_contact: Schema.Attribute.Component<
-      'contact.emergency-contact',
-      false
-    >;
     first_name: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -737,7 +662,7 @@ export interface ApiSongSong extends Struct.CollectionTypeSchema {
   collectionName: 'songs';
   info: {
     description: 'Biblioteca de canciones con archivos adjuntos';
-    displayName: 'Song';
+    displayName: 'Canto';
     pluralName: 'songs';
     singularName: 'song';
   };
@@ -749,6 +674,7 @@ export interface ApiSongSong extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    eventos: Schema.Attribute.Relation<'manyToMany', 'api::event.event'>;
     is_active: Schema.Attribute.Boolean &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<true>;
@@ -771,57 +697,11 @@ export interface ApiSongSong extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiTenantTenant extends Struct.CollectionTypeSchema {
-  collectionName: 'tenants';
-  info: {
-    description: 'Gesti\u00F3n multi-inquilino para aislar datos de diferentes organizaciones';
-    displayName: 'Tenant';
-    pluralName: 'tenants';
-    singularName: 'tenant';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    administrator: Schema.Attribute.Relation<'oneToOne', 'api::person.person'>;
-    choirs: Schema.Attribute.Relation<'oneToMany', 'api::choir.choir'> &
-      Schema.Attribute.Private;
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    is_active: Schema.Attribute.Boolean &
-      Schema.Attribute.Required &
-      Schema.Attribute.DefaultTo<true>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::tenant.tenant'
-    > &
-      Schema.Attribute.Private;
-    name: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.Unique &
-      Schema.Attribute.SetPluginOptions<{
-        i18n: {
-          localized: false;
-        };
-      }> &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 255;
-      }>;
-    publishedAt: Schema.Attribute.DateTime;
-    settings: Schema.Attribute.JSON;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiVestmentVestment extends Struct.CollectionTypeSchema {
   collectionName: 'vestments';
   info: {
     description: 'Tipos de vestimenta para eventos';
-    displayName: 'Vestment';
+    displayName: 'Vestimenta';
     pluralName: 'vestments';
     singularName: 'vestment';
   };
@@ -1363,14 +1243,12 @@ declare module '@strapi/strapi' {
       'admin::user': AdminUser;
       'api::choir.choir': ApiChoirChoir;
       'api::event-program-song.event-program-song': ApiEventProgramSongEventProgramSong;
-      'api::event-program.event-program': ApiEventProgramEventProgram;
       'api::event.event': ApiEventEvent;
       'api::global.global': ApiGlobalGlobal;
       'api::liturgical-season.liturgical-season': ApiLiturgicalSeasonLiturgicalSeason;
       'api::liturgical-section.liturgical-section': ApiLiturgicalSectionLiturgicalSection;
       'api::person.person': ApiPersonPerson;
       'api::song.song': ApiSongSong;
-      'api::tenant.tenant': ApiTenantTenant;
       'api::vestment.vestment': ApiVestmentVestment;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
