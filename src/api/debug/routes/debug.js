@@ -24,7 +24,7 @@ module.exports = {
         },
         {
             method: 'GET',
-            path: '/debug/download-all-schemas',
+            path: '/debug/export-schemas',
             handler: 'debug.downloadAllSchemas',
             config: {
                 auth: false,

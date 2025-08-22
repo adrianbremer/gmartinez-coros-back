@@ -204,10 +204,22 @@ module.exports = {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0] + '-' + new Date().toISOString().replace(/[:.]/g, '-').split('T')[1].split('.')[0];
             const zipFileName = `schemas-${timestamp}.zip`;
 
+            // Create exports directory if it doesn't exist
+            const exportsDir = path.join(process.cwd(), 'exports');
+            if (!fs.existsSync(exportsDir)) {
+                fs.mkdirSync(exportsDir, { recursive: true });
+                console.log('Created exports directory');
+            }
+
+            const zipFilePath = path.join(exportsDir, zipFileName);
+
             // Create a ZIP archive
             const archive = archiver('zip', {
                 zlib: { level: 9 } // Sets the compression level
             });
+
+            // Create write stream to save the file
+            const output = fs.createWriteStream(zipFilePath);
 
             // Collect all files first
             const filesToAdd = [];
@@ -235,38 +247,49 @@ module.exports = {
             // Collect all schema files
             collectSchemaFiles(srcPath);
 
-            // Create a buffer to store the ZIP
-            const chunks = [];
-
-            archive.on('data', (chunk) => {
-                chunks.push(chunk);
-            });
-
-            archive.on('end', () => {
-                console.log('Archive finalized successfully');
-            });
+            // Pipe archive to file
+            archive.pipe(output);
 
             // Add all files to the archive
             filesToAdd.forEach(file => {
                 archive.file(file.fullPath, { name: file.relativePath });
             });
 
-            // Finalize the archive
-            await archive.finalize();
+            // Wait for the archive to finish
+            await new Promise((resolve, reject) => {
+                output.on('close', () => {
+                    console.log('Archive finalized successfully');
+                    resolve();
+                });
 
-            // Combine chunks into a buffer
-            const buffer = Buffer.concat(chunks);
+                archive.on('error', (err) => {
+                    console.error('Archive error:', err);
+                    reject(err);
+                });
 
-            // Set response headers for ZIP download
-            ctx.set('Content-Type', 'application/zip');
-            ctx.set('Content-Disposition', `attachment; filename="${zipFileName}"`);
-            ctx.set('Content-Length', buffer.length);
+                archive.finalize();
+            });
 
-            // Send the buffer as response
-            ctx.body = buffer;
+            // Get file stats
+            const stats = fs.statSync(zipFilePath);
+
+            // Return success response with file information
+            ctx.body = {
+                success: true,
+                message: 'Schema files exported successfully',
+                data: {
+                    fileName: zipFileName,
+                    filePath: zipFilePath,
+                    fileSize: stats.size,
+                    fileSizeMB: (stats.size / (1024 * 1024)).toFixed(2),
+                    filesIncluded: filesToAdd.length,
+                    timestamp: new Date().toISOString(),
+                    files: filesToAdd.map(file => file.relativePath)
+                }
+            };
 
         } catch (error) {
-            console.error('Download error:', error);
+            console.error('Export error:', error);
             ctx.status = 500;
             ctx.body = {
                 success: false,
