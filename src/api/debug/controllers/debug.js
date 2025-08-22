@@ -204,20 +204,15 @@ module.exports = {
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0] + '-' + new Date().toISOString().replace(/[:.]/g, '-').split('T')[1].split('.')[0];
             const zipFileName = `schemas-${timestamp}.zip`;
 
-            // Set response headers for ZIP download
-            ctx.set('Content-Type', 'application/zip');
-            ctx.set('Content-Disposition', `attachment; filename="${zipFileName}"`);
-
             // Create a ZIP archive
             const archive = archiver('zip', {
                 zlib: { level: 9 } // Sets the compression level
             });
 
-            // Pipe archive data to the response
-            archive.pipe(ctx.res);
+            // Collect all files first
+            const filesToAdd = [];
 
-            // Function to add schema files to the archive
-            function addSchemaFilesToArchive(dirPath, archivePath = '') {
+            function collectSchemaFiles(dirPath, archivePath = '') {
                 const files = fs.readdirSync(dirPath);
 
                 files.forEach(file => {
@@ -226,22 +221,53 @@ module.exports = {
                     const stats = fs.statSync(fullPath);
 
                     if (stats.isDirectory()) {
-                        addSchemaFilesToArchive(fullPath, relativePath);
+                        collectSchemaFiles(fullPath, relativePath);
                     } else if (file === 'schema.json' || file.endsWith('.json')) {
-                        // Add file to the archive
-                        archive.file(fullPath, { name: relativePath });
+                        filesToAdd.push({
+                            fullPath,
+                            relativePath
+                        });
                         console.log(`Added to ZIP: ${relativePath}`);
                     }
                 });
             }
 
-            // Add all schema files to the archive
-            addSchemaFilesToArchive(srcPath);
+            // Collect all schema files
+            collectSchemaFiles(srcPath);
+
+            // Create a buffer to store the ZIP
+            const chunks = [];
+
+            archive.on('data', (chunk) => {
+                chunks.push(chunk);
+            });
+
+            archive.on('end', () => {
+                console.log('Archive finalized successfully');
+            });
+
+            // Add all files to the archive
+            filesToAdd.forEach(file => {
+                archive.file(file.fullPath, { name: file.relativePath });
+            });
 
             // Finalize the archive
             await archive.finalize();
 
+            // Combine chunks into a buffer
+            const buffer = Buffer.concat(chunks);
+
+            // Set response headers for ZIP download
+            ctx.set('Content-Type', 'application/zip');
+            ctx.set('Content-Disposition', `attachment; filename="${zipFileName}"`);
+            ctx.set('Content-Length', buffer.length);
+
+            // Send the buffer as response
+            ctx.body = buffer;
+
         } catch (error) {
+            console.error('Download error:', error);
+            ctx.status = 500;
             ctx.body = {
                 success: false,
                 error: error.message
