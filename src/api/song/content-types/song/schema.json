@@ -1,67 +1,61 @@
 {
-  "kind": "collectionType",
-  "collectionName": "songs",
-  "info": {
-    "singularName": "song",
-    "pluralName": "songs",
-    "displayName": "Canto",
-    "description": "Biblioteca de canciones con archivos adjuntos"
-  },
-  "options": {
-    "draftAndPublish": false
-  },
-  "pluginOptions": {},
-  "attributes": {
-    "name": {
-      "type": "string",
-      "maxLength": 255,
-      "required": true
+    "kind": "collectionType",
+    "collectionName": "songs",
+    "info": {
+        "singularName": "song",
+        "pluralName": "songs",
+        "displayName": "Canto",
+        "description": "Biblioteca de canciones con archivos adjuntos"
     },
-    "notes": {
-      "type": "text"
+    "options": {
+        "draftAndPublish": false
     },
-    "lyrics_file": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "files"
-      ]
-    },
-    "sheet_music_file": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "files"
-      ]
-    },
-    "backing_track_file": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "audios"
-      ]
-    },
-    "recording_file": {
-      "type": "media",
-      "multiple": false,
-      "required": false,
-      "allowedTypes": [
-        "audios"
-      ]
-    },
-    "is_active": {
-      "type": "boolean",
-      "required": true,
-      "default": true
-    },
-    "eventos": {
-      "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::event.event",
-      "inversedBy": "cantos"
+    "pluginOptions": {},
+    "attributes": {
+        "name": {
+            "type": "string",
+            "maxLength": 255,
+            "required": true
+        },
+        "notes": {
+            "type": "text"
+        },
+        "lyrics_file": {
+            "type": "media",
+            "multiple": false,
+            "required": false,
+            "allowedTypes": [
+                "files"
+            ]
+        },
+        "sheet_music_file": {
+            "type": "media",
+            "multiple": false,
+            "required": false,
+            "allowedTypes": [
+                "files"
+            ]
+        },
+        "backing_track_file": {
+            "type": "media",
+            "multiple": false,
+            "required": false,
+            "allowedTypes": [
+                "audios"
+            ]
+        },
+        "recording_file": {
+            "type": "media",
+            "multiple": false,
+            "required": false,
+            "allowedTypes": [
+                "audios"
+            ]
+        },
+        "is_active": {
+            "type": "boolean",
+            "required": true,
+            "default": true
+        }
     }
-  }
 }

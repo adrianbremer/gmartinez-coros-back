@@ -1,0 +1,29 @@
+{
+    "collectionName": "components_event_canto_entry",
+    "info": {
+        "displayName": "Canto Entry",
+        "description": "A song with additional notes for events",
+        "icon": "music"
+    },
+    "options": {},
+    "attributes": {
+        "song": {
+            "type": "relation",
+            "relation": "manyToOne",
+            "target": "api::song.song",
+            "required": true,
+            "displayName": "Song"
+        },
+        "notes": {
+            "type": "text",
+            "displayName": "Notes",
+            "description": "Additional notes for this song in this event"
+        },
+        "performance_order": {
+            "type": "integer",
+            "min": 1,
+            "displayName": "Performance Order",
+            "description": "Order in which this song should be performed"
+        }
+    }
+}

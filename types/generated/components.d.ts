@@ -42,6 +42,27 @@ export interface ContactEmergencyContact extends Struct.ComponentSchema {
   };
 }
 
+export interface EventCantoEntry extends Struct.ComponentSchema {
+  collectionName: 'components_event_canto_entry';
+  info: {
+    description: 'A song with additional notes for events';
+    displayName: 'Canto Entry';
+    icon: 'music';
+  };
+  attributes: {
+    notes: Schema.Attribute.Text;
+    performance_order: Schema.Attribute.Integer &
+      Schema.Attribute.SetMinMax<
+        {
+          min: 1;
+        },
+        number
+      >;
+    song: Schema.Attribute.Relation<'manyToOne', 'api::song.song'> &
+      Schema.Attribute.Required;
+  };
+}
+
 export interface EventEventContacts extends Struct.ComponentSchema {
   collectionName: 'components_event_event_contacts';
   info: {
@@ -133,6 +154,7 @@ declare module '@strapi/strapi' {
     export interface ComponentSchemas {
       'contact.contact-info': ContactContactInfo;
       'contact.emergency-contact': ContactEmergencyContact;
+      'event.canto-entry': EventCantoEntry;
       'event.event-contacts': EventEventContacts;
       'shared.media': SharedMedia;
       'shared.quote': SharedQuote;

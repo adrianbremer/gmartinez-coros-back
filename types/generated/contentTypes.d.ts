@@ -407,49 +407,6 @@ export interface ApiChoirChoir extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiEventProgramSongEventProgramSong
-  extends Struct.CollectionTypeSchema {
-  collectionName: 'event_program_songs';
-  info: {
-    description: 'Canciones espec\u00EDficas en un programa con orden y detalles';
-    displayName: 'Event Program Song';
-    pluralName: 'event-program-songs';
-    singularName: 'event-program-song';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    liturgical_section: Schema.Attribute.Relation<
-      'manyToOne',
-      'api::liturgical-section.liturgical-section'
-    >;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::event-program-song.event-program-song'
-    > &
-      Schema.Attribute.Private;
-    performance_order: Schema.Attribute.Integer &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 1;
-        },
-        number
-      >;
-    publishedAt: Schema.Attribute.DateTime;
-    song: Schema.Attribute.Relation<'manyToOne', 'api::song.song'>;
-    special_notes: Schema.Attribute.Text;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiEventEvent extends Struct.CollectionTypeSchema {
   collectionName: 'events';
   info: {
@@ -462,7 +419,7 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    cantos: Schema.Attribute.Relation<'manyToMany', 'api::song.song'>;
+    cantos: Schema.Attribute.Component<'event.canto-entry', true>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -674,7 +631,6 @@ export interface ApiSongSong extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    eventos: Schema.Attribute.Relation<'manyToMany', 'api::event.event'>;
     is_active: Schema.Attribute.Boolean &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<true>;
@@ -1242,7 +1198,6 @@ declare module '@strapi/strapi' {
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
       'api::choir.choir': ApiChoirChoir;
-      'api::event-program-song.event-program-song': ApiEventProgramSongEventProgramSong;
       'api::event.event': ApiEventEvent;
       'api::global.global': ApiGlobalGlobal;
       'api::liturgical-season.liturgical-season': ApiLiturgicalSeasonLiturgicalSeason;
