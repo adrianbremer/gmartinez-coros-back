@@ -55,7 +55,7 @@
       "type": "relation",
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
-      "displayName": "User Account"
+      "mappedBy": "person"
     },
     "is_active": {
       "type": "boolean",

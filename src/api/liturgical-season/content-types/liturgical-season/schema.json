@@ -19,6 +19,18 @@
     },
     "description": {
       "type": "text"
+    },
+    "cantos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::song.song",
+      "inversedBy": "tiempos_liturgicos"
+    },
+    "eventos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::event.event",
+      "mappedBy": "tiempo_liturgico"
     }
   }
 }

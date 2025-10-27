@@ -62,6 +62,21 @@
       "relation": "manyToOne",
       "target": "api::choir.choir",
       "inversedBy": "cantos"
+    },
+    "url_youtube": {
+      "type": "string"
+    },
+    "tiempos_de_celebracion": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::liturgical-section.liturgical-section",
+      "mappedBy": "cantos"
+    },
+    "tiempos_liturgicos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::liturgical-season.liturgical-season",
+      "mappedBy": "cantos"
     }
   }
 }

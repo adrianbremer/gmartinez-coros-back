@@ -43,6 +43,12 @@
       "relation": "oneToMany",
       "target": "api::song.song",
       "mappedBy": "coro"
+    },
+    "eventos": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::event.event",
+      "mappedBy": "coro"
     }
   }
 }

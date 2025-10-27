@@ -57,6 +57,18 @@
     "location": {
       "type": "customField",
       "customField": "plugin::google-maps.location-picker"
+    },
+    "coro": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::choir.choir",
+      "inversedBy": "eventos"
+    },
+    "tiempo_liturgico": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::liturgical-season.liturgical-season",
+      "inversedBy": "eventos"
     }
   }
 }

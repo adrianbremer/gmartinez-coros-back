@@ -19,6 +19,12 @@
     },
     "description": {
       "type": "text"
+    },
+    "cantos": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::song.song",
+      "inversedBy": "tiempos_de_celebracion"
     }
   }
 }
