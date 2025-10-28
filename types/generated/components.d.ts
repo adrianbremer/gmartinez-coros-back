@@ -25,6 +25,7 @@ export interface EventCantoEntry extends Struct.ComponentSchema {
     description: 'A song with additional notes for events';
     displayName: 'Canto Entry';
     icon: 'music';
+    mainField: 'song_name';
   };
   attributes: {
     notes: Schema.Attribute.String &
@@ -40,6 +41,10 @@ export interface EventCantoEntry extends Struct.ComponentSchema {
       >;
     song: Schema.Attribute.Relation<'manyToOne', 'api::song.song'> &
       Schema.Attribute.Required;
+    song_name: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 255;
+      }>;
   };
 }
 

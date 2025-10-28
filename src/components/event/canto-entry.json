@@ -3,7 +3,8 @@
     "info": {
         "displayName": "Canto Entry",
         "description": "A song with additional notes for events",
-        "icon": "music"
+        "icon": "music",
+        "mainField": "song_name"
     },
     "options": {},
     "attributes": {
@@ -13,6 +14,12 @@
             "target": "api::song.song",
             "required": true,
             "displayName": "Song"
+        },
+        "song_name": {
+            "type": "string",
+            "maxLength": 255,
+            "displayName": "Song Name",
+            "description": "Auto-populated from selected song"
         },
         "notes": {
             "type": "string",

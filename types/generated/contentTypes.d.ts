@@ -391,6 +391,7 @@ export interface ApiChoirChoir extends Struct.CollectionTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
+    eventos: Schema.Attribute.Relation<'oneToMany', 'api::event.event'>;
     is_active: Schema.Attribute.Boolean;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::choir.choir'> &
@@ -425,6 +426,7 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
   };
   attributes: {
     cantos: Schema.Attribute.Component<'event.canto-entry', true>;
+    coro: Schema.Attribute.Relation<'manyToOne', 'api::choir.choir'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -447,6 +449,10 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     program_notes: Schema.Attribute.Text;
     publishedAt: Schema.Attribute.DateTime;
     special_instructions: Schema.Attribute.Text;
+    tiempo_liturgico: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::liturgical-season.liturgical-season'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -503,10 +509,12 @@ export interface ApiLiturgicalSeasonLiturgicalSeason
     draftAndPublish: false;
   };
   attributes: {
+    cantos: Schema.Attribute.Relation<'manyToMany', 'api::song.song'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     description: Schema.Attribute.Text;
+    eventos: Schema.Attribute.Relation<'oneToMany', 'api::event.event'>;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -538,6 +546,7 @@ export interface ApiLiturgicalSectionLiturgicalSection
     draftAndPublish: false;
   };
   attributes: {
+    cantos: Schema.Attribute.Relation<'manyToMany', 'api::song.song'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -655,9 +664,18 @@ export interface ApiSongSong extends Struct.CollectionTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     recording_file: Schema.Attribute.Media<'audios'>;
     sheet_music_file: Schema.Attribute.Media<'files'>;
+    tiempos_de_celebracion: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::liturgical-section.liturgical-section'
+    >;
+    tiempos_liturgicos: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::liturgical-season.liturgical-season'
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    url_youtube: Schema.Attribute.String;
   };
 }
 
@@ -1196,7 +1214,6 @@ export interface PluginUsersPermissionsUser
   };
   options: {
     draftAndPublish: false;
-    timestamps: true;
   };
   attributes: {
     blocked: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
@@ -1221,6 +1238,7 @@ export interface PluginUsersPermissionsUser
       Schema.Attribute.SetMinMaxLength<{
         minLength: 6;
       }>;
+    person: Schema.Attribute.Relation<'oneToOne', 'api::person.person'>;
     provider: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     resetPasswordToken: Schema.Attribute.String & Schema.Attribute.Private;
