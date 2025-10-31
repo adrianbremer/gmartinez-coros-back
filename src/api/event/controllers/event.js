@@ -8,6 +8,27 @@ const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController('api::event.event', ({ strapi }) => ({
 
+    // Implementación limpia de findOne
+    async findOne(ctx) {
+        const { id } = ctx.params;
+
+        try {
+            const { query } = await this.sanitizeQuery(ctx);
+            const entity = await strapi.entityService.findOne('api::event.event', id, query);
+
+            if (!entity) {
+                return ctx.notFound('Event not found');
+            }
+
+            const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
+            return this.transformResponse(sanitizedEntity);
+
+        } catch (error) {
+            strapi.log.error('Event findOne error:', error);
+            return ctx.internalServerError('Internal server error');
+        }
+    },
+
     // Endpoint personalizado para actualizar nombres de cantos en eventos existentes
     async updateSongNames(ctx) {
         try {

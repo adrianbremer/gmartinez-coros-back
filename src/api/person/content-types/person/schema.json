@@ -67,6 +67,12 @@
       "relation": "manyToMany",
       "target": "api::choir.choir",
       "mappedBy": "members"
+    },
+    "attendances": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::attendance.attendance",
+      "mappedBy": "person"
     }
   }
 }

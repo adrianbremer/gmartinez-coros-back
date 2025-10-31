@@ -8,6 +8,20 @@ module.exports = {
         const { data } = event.params;
         await populateSongNames(data);
     },
+
+    async afterCreate(event) {
+        const { result } = event;
+        // Crear invitaciones automáticamente si el evento tiene coro
+        if (result.coro) {
+            setTimeout(async () => {
+                try {
+                    await strapi.service('api::attendance.attendance').createInvitationsForEvent(result.id);
+                } catch (error) {
+                    strapi.log.error('Error creating invitations:', error);
+                }
+            }, 1000);
+        }
+    },
 };
 
 async function populateSongNames(data) {

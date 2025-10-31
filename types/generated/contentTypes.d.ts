@@ -373,6 +373,50 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAttendanceAttendance extends Struct.CollectionTypeSchema {
+  collectionName: 'attendances';
+  info: {
+    description: 'Control de asistencia de miembros del coro a eventos';
+    displayName: 'Asistencia';
+    pluralName: 'attendances';
+    singularName: 'attendance';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    attended_date: Schema.Attribute.DateTime;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    event: Schema.Attribute.Relation<'manyToOne', 'api::event.event'> &
+      Schema.Attribute.Required;
+    invited_date: Schema.Attribute.DateTime &
+      Schema.Attribute.DefaultTo<'{{now}}'>;
+    is_present: Schema.Attribute.Boolean;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::attendance.attendance'
+    > &
+      Schema.Attribute.Private;
+    notes: Schema.Attribute.Text;
+    person: Schema.Attribute.Relation<'manyToOne', 'api::person.person'> &
+      Schema.Attribute.Required;
+    publishedAt: Schema.Attribute.DateTime;
+    reminder_sent: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    response_date: Schema.Attribute.DateTime;
+    status: Schema.Attribute.Enumeration<
+      ['pending', 'confirmed', 'declined', 'maybe']
+    > &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<'pending'>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiChoirChoir extends Struct.CollectionTypeSchema {
   collectionName: 'choirs';
   info: {
@@ -425,6 +469,10 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    attendances: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::attendance.attendance'
+    >;
     cantos: Schema.Attribute.Component<'event.canto-entry', true>;
     coro: Schema.Attribute.Relation<'manyToOne', 'api::choir.choir'>;
     createdAt: Schema.Attribute.DateTime;
@@ -581,6 +629,10 @@ export interface ApiPersonPerson extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    attendances: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::attendance.attendance'
+    >;
     birth_date: Schema.Attribute.Date;
     choirs: Schema.Attribute.Relation<'manyToMany', 'api::choir.choir'>;
     createdAt: Schema.Attribute.DateTime;
@@ -1268,6 +1320,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::attendance.attendance': ApiAttendanceAttendance;
       'api::choir.choir': ApiChoirChoir;
       'api::event.event': ApiEventEvent;
       'api::global.global': ApiGlobalGlobal;

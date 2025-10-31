@@ -69,6 +69,12 @@
       "relation": "manyToOne",
       "target": "api::liturgical-season.liturgical-season",
       "inversedBy": "eventos"
+    },
+    "attendances": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::attendance.attendance",
+      "mappedBy": "event"
     }
   }
 }

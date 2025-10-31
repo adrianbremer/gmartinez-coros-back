@@ -1,0 +1,63 @@
+{
+  "kind": "collectionType",
+  "collectionName": "attendances",
+  "info": {
+    "singularName": "attendance",
+    "pluralName": "attendances",
+    "displayName": "Asistencia",
+    "description": "Control de asistencia de miembros del coro a eventos"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "event": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::event.event",
+      "inversedBy": "attendances",
+      "required": true
+    },
+    "person": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::person.person",
+      "inversedBy": "attendances",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "confirmed",
+        "declined",
+        "maybe"
+      ],
+      "default": "pending",
+      "required": true
+    },
+    "response_date": {
+      "type": "datetime"
+    },
+    "notes": {
+      "type": "text"
+    },
+    "invited_date": {
+      "type": "datetime",
+      "default": "{{now}}"
+    },
+    "reminder_sent": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_present": {
+      "type": "boolean",
+      "description": "Marcar presente el día del evento"
+    },
+    "attended_date": {
+      "type": "datetime",
+      "description": "Hora exacta en que se marcó presente"
+    }
+  }
+}
