@@ -53,12 +53,8 @@ module.exports = [
             enabled: true,
             headers: '*',
             origin: [
-                'http://localhost:1337',
-                'https://localhost:1337',
                 'http://back.coralia.com.mx',
                 'https://back.coralia.com.mx',
-                'http://back.coralia.com.mx:1337',
-                'https://back.coralia.com.mx:1337'
             ]
         }
     },
