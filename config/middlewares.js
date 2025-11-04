@@ -55,6 +55,10 @@ module.exports = [
             origin: [
                 'http://back.coralia.com.mx',
                 'https://back.coralia.com.mx',
+                'http://coralia.com.mx',
+                'https://coralia.com.mx',
+                'http://www.coralia.com.mx',
+                'https://www.coralia.com.mx',
             ]
         }
     },
