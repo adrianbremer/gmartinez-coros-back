@@ -53,7 +53,7 @@ module.exports = [
             headers: '*',
             origin: [
                 'http://localhost:1337',
-                'https://localhost:1337',
+                'http://localhost:3000',
                 'http://back.coralia.com.mx',
                 'https://back.coralia.com.mx',
                 'http://coralia.com.mx',
