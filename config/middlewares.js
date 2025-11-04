@@ -53,18 +53,13 @@ module.exports = [
             enabled: true,
             headers: '*',
             origin: [
-                'http://localhost:1337',
-                'https://localhost:1337',
                 'http://back.coralia.com.mx',
                 'https://back.coralia.com.mx',
                 'http://coralia.com.mx',
                 'https://coralia.com.mx',
                 'http://www.coralia.com.mx',
                 'https://www.coralia.com.mx',
-            ],
-            credentials: true,
-            methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
-            allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+            ]
         }
     },
     'strapi::poweredBy',
