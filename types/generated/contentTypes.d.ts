@@ -494,6 +494,10 @@ export interface ApiEventEvent extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 255;
       }>;
+    pdf_error: Schema.Attribute.String;
+    pdf_filename: Schema.Attribute.String;
+    pdf_generated_at: Schema.Attribute.DateTime;
+    pdf_path: Schema.Attribute.String;
     program_notes: Schema.Attribute.Text;
     publishedAt: Schema.Attribute.DateTime;
     special_instructions: Schema.Attribute.Text;
