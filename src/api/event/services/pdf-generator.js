@@ -109,44 +109,67 @@ module.exports = ({ strapi }) => ({
     async mergePDFs(coverPdfBuffer, songsWithLyrics, event) {
         try {
             strapi.log.info(`Merging cover PDF with ${songsWithLyrics.length} lyrics PDFs`);
+            strapi.log.debug('Song PDFs to merge:', songsWithLyrics.map(s => ({
+                name: s.song?.name,
+                path: s.pdfPath,
+                order: s.order
+            })));
 
             // Use require with await import fallback
             let PDFMerger;
             try {
                 PDFMerger = require('pdf-merger-js');
+                strapi.log.debug('Loaded pdf-merger-js via require');
             } catch (requireError) {
+                strapi.log.debug('require failed, trying dynamic import:', requireError.message);
                 const module = await eval('import("pdf-merger-js")');
                 PDFMerger = module.default;
+                strapi.log.debug('Loaded pdf-merger-js via dynamic import');
             }
 
             const merger = new PDFMerger();
             const tempDir = path.join(process.cwd(), 'public', '.temp');
             await fs.ensureDir(tempDir);
+            strapi.log.debug('Temp directory ready:', tempDir);
 
             // Save cover PDF to temporary file
             const coverTempPath = path.join(tempDir, `cover-${event.id}-${Date.now()}.pdf`);
             await fs.writeFile(coverTempPath, coverPdfBuffer);
+            strapi.log.debug('Cover PDF saved to:', coverTempPath);
 
             // Add cover PDF first
             await merger.add(coverTempPath);
+            strapi.log.debug('Cover PDF added to merger');
 
             // Add each lyrics PDF in order
+            let addedCount = 0;
             for (const songData of songsWithLyrics) {
                 try {
+                    strapi.log.debug(`Attempting to add lyrics PDF: ${songData.pdfPath}`);
                     // Verify file exists before adding
                     if (await fs.pathExists(songData.pdfPath)) {
                         await merger.add(songData.pdfPath);
+                        addedCount++;
+                        strapi.log.debug(`Added lyrics PDF for ${songData.song.name}`);
                     } else {
                         strapi.log.warn(`PDF file not found: ${songData.pdfPath}`);
                     }
                 } catch (error) {
-                    strapi.log.error(`Error adding lyrics PDF for ${songData.song.name}:`, error);
+                    strapi.log.error(`Error adding lyrics PDF for ${songData.song.name}:`, {
+                        message: error.message,
+                        stack: error.stack,
+                        path: songData.pdfPath
+                    });
                     // Continue with other PDFs even if one fails
                 }
             }
 
+            strapi.log.info(`Added ${addedCount} of ${songsWithLyrics.length} lyrics PDFs to merger`);
+
             // Generate merged PDF as buffer
+            strapi.log.debug('Generating merged PDF buffer...');
             const mergedPdfBuffer = await merger.saveAsBuffer();
+            strapi.log.debug('Merged PDF buffer generated, size:', mergedPdfBuffer.length);
 
             // Clean up temporary files
             try {
@@ -159,7 +182,14 @@ module.exports = ({ strapi }) => ({
             return mergedPdfBuffer;
 
         } catch (error) {
-            strapi.log.error('Error merging PDFs:', error.message);
+            strapi.log.error('Error merging PDFs:', {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
+                coverBufferSize: coverPdfBuffer?.length,
+                songsCount: songsWithLyrics?.length,
+                songPaths: songsWithLyrics?.map(s => s.pdfPath)
+            });
             // If merging fails, return just the cover PDF
             strapi.log.warn('Falling back to cover PDF only');
             return coverPdfBuffer;
