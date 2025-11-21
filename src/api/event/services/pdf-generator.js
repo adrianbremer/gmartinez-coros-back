@@ -78,16 +78,15 @@ module.exports = ({ strapi }) => ({
 
                 // Get full song data with lyrics
                 const songData = await strapi.entityService.findOne('api::song.song', song.id, {
-                    populate: ['lyrics_file']
+                    populate: ['lyrics_file', 'sheet_music_file']
                 });
 
                 let pdfPath = null;
                 let isTemp = false;
 
+                // Priority 1: Lyrics PDF
                 if (songData && songData.lyrics_file && songData.lyrics_file.url) {
-                    // Check if it's a PDF file
                     const fileExtension = path.extname(songData.lyrics_file.url).toLowerCase();
-
                     if (fileExtension === '.pdf') {
                         const fullPath = path.join(process.cwd(), 'public', songData.lyrics_file.url);
                         if (await fs.pathExists(fullPath)) {
@@ -98,7 +97,20 @@ module.exports = ({ strapi }) => ({
                     }
                 }
 
-                // If no PDF found, generate a info page
+                // Priority 2: Sheet Music PDF (if no lyrics PDF)
+                if (!pdfPath && songData && songData.sheet_music_file && songData.sheet_music_file.url) {
+                    const fileExtension = path.extname(songData.sheet_music_file.url).toLowerCase();
+                    if (fileExtension === '.pdf') {
+                        const fullPath = path.join(process.cwd(), 'public', songData.sheet_music_file.url);
+                        if (await fs.pathExists(fullPath)) {
+                            pdfPath = fullPath;
+                        } else {
+                            strapi.log.warn(`Sheet music PDF file not found for song: ${songData.name}`);
+                        }
+                    }
+                }
+
+                // Priority 3: Generated Info Page
                 if (!pdfPath) {
                     strapi.log.debug(`Generating info page for song: ${songData.name}`);
                     const buffer = await this.createSongPagePDF(songData, canto);
