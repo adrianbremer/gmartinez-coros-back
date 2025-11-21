@@ -343,8 +343,11 @@ module.exports = ({ strapi }) => ({
 
                 // Add Header and Footer to every page automatically
                 doc.on('pageAdded', () => {
-                    this.addHeader(doc, event);
-                    this.addFooter(doc);
+                    // Use setImmediate to avoid recursive calls within the event loop
+                    setImmediate(() => {
+                        this.addHeader(doc, event);
+                        this.addFooter(doc);
+                    });
                 });
 
                 // Add the first page explicitly
