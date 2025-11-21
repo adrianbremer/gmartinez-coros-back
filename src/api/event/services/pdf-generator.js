@@ -43,7 +43,14 @@ module.exports = ({ strapi }) => ({
             if (programPdfBuffer) {
                 pdfBuffersToMerge.push(programPdfBuffer);
             }
-            pdfBuffersToMerge.push(...songPDFs.map(s => ({ path: s.pdfPath, isTemp: s.isTemp, song: s.song })));
+
+            // Add song PDF file paths
+            for (const songPdf of songPDFs) {
+                pdfBuffersToMerge.push({
+                    path: songPdf.pdfPath,
+                    isTemp: songPdf.isTemp
+                });
+            }
 
             if (pdfBuffersToMerge.length === 1) {
                 // Just the cover
@@ -56,7 +63,6 @@ module.exports = ({ strapi }) => ({
 
             strapi.log.info(`📋 Event ${eventId}: Generated complete PDF with program and ${songPDFs.length} song pages`);
             return finalPdfBuffer;
-
         } catch (error) {
             strapi.log.error('Error generating event PDF:', error);
             throw error;
@@ -558,7 +564,7 @@ module.exports = ({ strapi }) => ({
 
     async mergePDFBuffers(pdfBuffersToMerge, event) {
         try {
-            strapi.log.info(`Merging ${pdfBuffersToMerge.length} PDF buffers`);
+            strapi.log.info(`Merging ${pdfBuffersToMerge.length} PDF items`);
 
             // Import pdf-merger-js (it's an ES module)
             const PDFMergerModule = await import('pdf-merger-js');
@@ -570,27 +576,43 @@ module.exports = ({ strapi }) => ({
 
             const tempFiles = [];
 
-            // Add cover PDF first
-            const coverTempPath = path.join(tempDir, `cover-${event.id}-${Date.now()}.pdf`);
-            await fs.writeFile(coverTempPath, pdfBuffersToMerge[0]);
-            tempFiles.push(coverTempPath);
-            await merger.add(coverTempPath);
-
-            // Add program and song PDFs
-            for (let i = 1; i < pdfBuffersToMerge.length; i++) {
+            // Process each item in the merge list
+            for (let i = 0; i < pdfBuffersToMerge.length; i++) {
                 const item = pdfBuffersToMerge[i];
-                let filePath = item.path || item;
+                let filePath;
 
-                if (await fs.pathExists(filePath)) {
-                    await merger.add(filePath);
+                // Check if it's a Buffer (cover or program) or a file path object (songs)
+                if (Buffer.isBuffer(item)) {
+                    // It's a buffer, save it to a temp file
+                    const tempFileName = i === 0 ? `cover-${event.id}-${Date.now()}.pdf` : `program-${event.id}-${Date.now()}.pdf`;
+                    filePath = path.join(tempDir, tempFileName);
+                    await fs.writeFile(filePath, item);
+                    tempFiles.push(filePath);
+                    strapi.log.debug(`Saved buffer to temp file: ${filePath}`);
+                } else if (item && item.path) {
+                    // It's a file path object
+                    filePath = item.path;
                     if (item.isTemp) {
                         tempFiles.push(filePath);
                     }
+                } else {
+                    // Skip invalid items
+                    strapi.log.warn(`Skipping invalid PDF item at index ${i}`);
+                    continue;
+                }
+
+                // Verify file exists and add to merger
+                if (await fs.pathExists(filePath)) {
+                    await merger.add(filePath);
+                    strapi.log.debug(`Added to merger: ${filePath}`);
+                } else {
+                    strapi.log.warn(`PDF file not found: ${filePath}`);
                 }
             }
 
             // Generate merged PDF as buffer
             const mergedPdfBuffer = await merger.saveAsBuffer();
+            strapi.log.info(`Successfully merged ${pdfBuffersToMerge.length} PDFs`);
 
             // Clean up temporary files
             try {
@@ -606,7 +628,7 @@ module.exports = ({ strapi }) => ({
         } catch (error) {
             strapi.log.error('Error merging PDFs:', error);
             // Fallback: return just the first buffer (cover)
-            return pdfBuffersToMerge[0];
+            return Buffer.isBuffer(pdfBuffersToMerge[0]) ? pdfBuffersToMerge[0] : null;
         }
     }
 });
