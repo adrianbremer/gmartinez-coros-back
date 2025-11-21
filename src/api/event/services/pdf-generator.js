@@ -30,19 +30,31 @@ module.exports = ({ strapi }) => ({
             // Generate the cover PDF
             const coverPdfBuffer = await this.createEventCoverPDF(event);
 
+            // Generate the program page PDF
+            const programPdfBuffer = event.cantos && event.cantos.length > 0
+                ? await this.createProgramPagePDF(event)
+                : null;
+
             // Get PDFs for all songs (existing lyrics or generated info pages)
             const songPDFs = await this.getSongPDFs(event.cantos);
 
-            if (songPDFs.length === 0) {
-                // No songs at all, return just the cover
+            // Merge all PDFs: cover -> program (if exists) -> songs
+            const pdfBuffersToMerge = [coverPdfBuffer];
+            if (programPdfBuffer) {
+                pdfBuffersToMerge.push(programPdfBuffer);
+            }
+            pdfBuffersToMerge.push(...songPDFs.map(s => ({ path: s.pdfPath, isTemp: s.isTemp, song: s.song })));
+
+            if (pdfBuffersToMerge.length === 1) {
+                // Just the cover
                 strapi.log.info(`📋 Event ${eventId}: Generated cover PDF only (no songs)`);
                 return coverPdfBuffer;
             }
 
-            // Merge cover PDF with song PDFs
-            const finalPdfBuffer = await this.mergePDFs(coverPdfBuffer, songPDFs, event);
+            // Merge all PDFs
+            const finalPdfBuffer = await this.mergePDFBuffers(pdfBuffersToMerge, event);
 
-            strapi.log.info(`📋 Event ${eventId}: Generated complete PDF with ${songPDFs.length} song pages`);
+            strapi.log.info(`📋 Event ${eventId}: Generated complete PDF with program and ${songPDFs.length} song pages`);
             return finalPdfBuffer;
 
         } catch (error) {
@@ -212,96 +224,6 @@ module.exports = ({ strapi }) => ({
                 reject(error);
             }
         });
-    },
-
-    async mergePDFs(coverPdfBuffer, songPDFs, event) {
-        try {
-            strapi.log.info(`Merging cover PDF with ${songPDFs.length} song PDFs`);
-            strapi.log.debug('Song PDFs to merge:', songPDFs.map(s => ({
-                name: s.song?.name,
-                path: s.pdfPath,
-                order: s.order,
-                isTemp: s.isTemp
-            })));
-
-            // Import pdf-merger-js (it's an ES module)
-            const PDFMergerModule = await import('pdf-merger-js');
-            const PDFMerger = PDFMergerModule.default;
-            strapi.log.debug('Loaded pdf-merger-js');
-
-            const merger = new PDFMerger();
-            const tempDir = path.join(process.cwd(), 'public', '.temp');
-            await fs.ensureDir(tempDir);
-            strapi.log.debug('Temp directory ready:', tempDir);
-
-            // Save cover PDF to temporary file
-            const coverTempPath = path.join(tempDir, `cover-${event.id}-${Date.now()}.pdf`);
-            await fs.writeFile(coverTempPath, coverPdfBuffer);
-            strapi.log.debug('Cover PDF saved to:', coverTempPath);
-
-            // Add cover PDF first
-            await merger.add(coverTempPath);
-            strapi.log.debug('Cover PDF added to merger');
-
-            // Add each lyrics PDF in order
-            let addedCount = 0;
-            for (const songData of songPDFs) {
-                try {
-                    strapi.log.debug(`Attempting to add lyrics PDF: ${songData.pdfPath}`);
-                    // Verify file exists before adding
-                    if (await fs.pathExists(songData.pdfPath)) {
-                        await merger.add(songData.pdfPath);
-                        addedCount++;
-                        strapi.log.debug(`Added lyrics PDF for ${songData.song.name}`);
-                    } else {
-                        strapi.log.warn(`PDF file not found: ${songData.pdfPath}`);
-                    }
-                } catch (error) {
-                    strapi.log.error(`Error adding lyrics PDF for ${songData.song.name}:`, {
-                        message: error.message,
-                        stack: error.stack,
-                        path: songData.pdfPath
-                    });
-                    // Continue with other PDFs even if one fails
-                }
-            }
-
-            strapi.log.info(`Added ${addedCount} of ${songPDFs.length} lyrics PDFs to merger`);
-
-            // Generate merged PDF as buffer
-            strapi.log.debug('Generating merged PDF buffer...');
-            const mergedPdfBuffer = await merger.saveAsBuffer();
-            strapi.log.debug('Merged PDF buffer generated, size:', mergedPdfBuffer.length);
-
-            // Clean up temporary files
-            try {
-                await fs.remove(coverTempPath);
-                // Clean up generated song pages
-                for (const songData of songPDFs) {
-                    if (songData.isTemp) {
-                        await fs.remove(songData.pdfPath).catch(() => { });
-                    }
-                }
-            } catch (cleanupError) {
-                strapi.log.warn('Error cleaning up temporary files:', cleanupError);
-            }
-
-            strapi.log.info(`Successfully merged PDF with ${songPDFs.length} lyrics PDFs`);
-            return mergedPdfBuffer;
-
-        } catch (error) {
-            strapi.log.error('Error merging PDFs:', {
-                message: error.message,
-                stack: error.stack,
-                name: error.name,
-                coverBufferSize: coverPdfBuffer?.length,
-                songsCount: songPDFs?.length,
-                songPaths: songPDFs?.map(s => s.pdfPath)
-            });
-            // If merging fails, return just the cover PDF
-            strapi.log.warn('Falling back to cover PDF only');
-            return coverPdfBuffer;
-        }
     },
 
     async addBlankPageToPDF(coverPdfBuffer) {
@@ -535,65 +457,156 @@ module.exports = ({ strapi }) => ({
             yPosition += boxHeight + 30;
         }
 
-        // --- Program Section ---
-        if (event.cantos && event.cantos.length > 0) {
-            // Check page break (leaving room at bottom to avoid blank pages)
-            if (yPosition > pageHeight - 120) {
+        // No fixed footer - content flows naturally to end of page
+    },
+
+    async createProgramPagePDF(event) {
+        return new Promise((resolve, reject) => {
+            try {
+                const doc = new PDFDocument({
+                    size: 'A4',
+                    margins: { top: 0, bottom: 0, left: 0, right: 0 }
+                });
+
+                const chunks = [];
+                doc.on('data', chunk => chunks.push(chunk));
+                doc.on('end', () => resolve(Buffer.concat(chunks)));
+                doc.on('error', reject);
+
+                this.addProgramContent(doc, event);
+                doc.end();
+
+            } catch (error) {
+                reject(error);
+            }
+        });
+    },
+
+    addProgramContent(doc, event) {
+        const pageWidth = doc.page.width;
+        const pageHeight = doc.page.height;
+        const margin = 50;
+        const contentWidth = pageWidth - (margin * 2);
+        let yPosition = margin;
+
+        // --- Header Background ---
+        doc.rect(0, 0, pageWidth, 100)
+            .fill('#2c3e50');
+
+        // --- Title Section ---
+        doc.fontSize(24)
+            .font('Helvetica-Bold')
+            .fillColor('#ffffff')
+            .text('Programa Musical', margin, 30, {
+                width: contentWidth,
+                align: 'center'
+            });
+
+        doc.fontSize(12)
+            .font('Helvetica')
+            .fillColor('#ecf0f1')
+            .text(`${event.cantos.length} cantos`, margin, 65, {
+                width: contentWidth,
+                align: 'center'
+            });
+
+        yPosition = 120;
+
+        // --- List songs with better styling ---
+        event.cantos.forEach((canto, index) => {
+            if (yPosition > pageHeight - 60) {
                 doc.addPage({ margins: { top: 0, bottom: 0, left: 0, right: 0 } });
                 yPosition = margin;
             }
 
-            doc.fontSize(16)
+            const songName = canto.song?.name || canto.song_name || `Canto ${index + 1}`;
+            const order = canto.performance_order || (index + 1);
+
+            // Song Number Circle
+            doc.circle(margin + 10, yPosition + 6, 10)
+                .fill('#3498db');
+
+            doc.fontSize(10)
+                .font('Helvetica-Bold')
+                .fillColor('#ffffff')
+                .text(order.toString(), margin, yPosition, {
+                    width: 20,
+                    align: 'center'
+                });
+
+            // Song Title
+            doc.fontSize(12)
                 .font('Helvetica-Bold')
                 .fillColor('#2c3e50')
-                .text('Programa Musical', margin, yPosition);
+                .text(songName, margin + 35, yPosition);
 
-            yPosition += 30;
-
-            // List songs with better styling
-            event.cantos.forEach((canto, index) => {
-                if (yPosition > pageHeight - 80) {
-                    doc.addPage({ margins: { top: 0, bottom: 0, left: 0, right: 0 } });
-                    yPosition = margin;
-                }
-
-                const songName = canto.song?.name || canto.song_name || `Canto ${index + 1}`;
-                const order = canto.performance_order || (index + 1);
-
-                // Song Number Circle
-                doc.circle(margin + 10, yPosition + 6, 10)
-                    .fill('#3498db');
-
+            // Notes
+            if (canto.notes) {
+                const notesHeight = doc.heightOfString(canto.notes, { width: contentWidth - 35 });
                 doc.fontSize(10)
-                    .font('Helvetica-Bold')
-                    .fillColor('#ffffff')
-                    .text(order.toString(), margin, yPosition, {
-                        width: 20,
-                        align: 'center'
+                    .font('Helvetica-Oblique')
+                    .fillColor('#7f8c8d')
+                    .text(canto.notes, margin + 35, yPosition + 15, {
+                        width: contentWidth - 35
                     });
+                yPosition += 15 + notesHeight + 10;
+            } else {
+                yPosition += 25;
+            }
+        });
+    },
 
-                // Song Title
-                doc.fontSize(12)
-                    .font('Helvetica-Bold')
-                    .fillColor('#2c3e50')
-                    .text(songName, margin + 35, yPosition);
+    async mergePDFBuffers(pdfBuffersToMerge, event) {
+        try {
+            strapi.log.info(`Merging ${pdfBuffersToMerge.length} PDF buffers`);
 
-                // Notes
-                if (canto.notes) {
-                    const notesHeight = doc.heightOfString(canto.notes, { width: contentWidth - 35 });
-                    doc.fontSize(10)
-                        .font('Helvetica-Oblique')
-                        .fillColor('#7f8c8d')
-                        .text(canto.notes, margin + 35, yPosition + 15, {
-                            width: contentWidth - 35
-                        });
-                    yPosition += 15 + notesHeight + 10;
-                } else {
-                    yPosition += 25;
+            // Import pdf-merger-js (it's an ES module)
+            const PDFMergerModule = await import('pdf-merger-js');
+            const PDFMerger = PDFMergerModule.default;
+
+            const merger = new PDFMerger();
+            const tempDir = path.join(process.cwd(), 'public', '.temp');
+            await fs.ensureDir(tempDir);
+
+            const tempFiles = [];
+
+            // Add cover PDF first
+            const coverTempPath = path.join(tempDir, `cover-${event.id}-${Date.now()}.pdf`);
+            await fs.writeFile(coverTempPath, pdfBuffersToMerge[0]);
+            tempFiles.push(coverTempPath);
+            await merger.add(coverTempPath);
+
+            // Add program and song PDFs
+            for (let i = 1; i < pdfBuffersToMerge.length; i++) {
+                const item = pdfBuffersToMerge[i];
+                let filePath = item.path || item;
+
+                if (await fs.pathExists(filePath)) {
+                    await merger.add(filePath);
+                    if (item.isTemp) {
+                        tempFiles.push(filePath);
+                    }
                 }
-            });
-        }
+            }
 
-        // No fixed footer - content flows naturally to end of page
+            // Generate merged PDF as buffer
+            const mergedPdfBuffer = await merger.saveAsBuffer();
+
+            // Clean up temporary files
+            try {
+                for (const filePath of tempFiles) {
+                    await fs.remove(filePath).catch(() => { });
+                }
+            } catch (cleanupError) {
+                strapi.log.warn('Error cleaning up temporary files:', cleanupError);
+            }
+
+            return mergedPdfBuffer;
+
+        } catch (error) {
+            strapi.log.error('Error merging PDFs:', error);
+            // Fallback: return just the first buffer (cover)
+            return pdfBuffersToMerge[0];
+        }
     }
 });
