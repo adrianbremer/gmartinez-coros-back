@@ -115,17 +115,10 @@ module.exports = ({ strapi }) => ({
                 order: s.order
             })));
 
-            // Use require with await import fallback
-            let PDFMerger;
-            try {
-                PDFMerger = require('pdf-merger-js');
-                strapi.log.debug('Loaded pdf-merger-js via require');
-            } catch (requireError) {
-                strapi.log.debug('require failed, trying dynamic import:', requireError.message);
-                const module = await eval('import("pdf-merger-js")');
-                PDFMerger = module.default;
-                strapi.log.debug('Loaded pdf-merger-js via dynamic import');
-            }
+            // Import pdf-merger-js (it's an ES module)
+            const PDFMergerModule = await import('pdf-merger-js');
+            const PDFMerger = PDFMergerModule.default;
+            strapi.log.debug('Loaded pdf-merger-js');
 
             const merger = new PDFMerger();
             const tempDir = path.join(process.cwd(), 'public', '.temp');
