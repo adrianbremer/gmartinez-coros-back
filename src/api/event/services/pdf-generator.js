@@ -144,45 +144,68 @@ module.exports = ({ strapi }) => ({
             try {
                 const doc = new PDFDocument({
                     size: 'A4',
-                    margins: { top: 50, bottom: 50, left: 50, right: 50 }
+                    margins: { top: 0, bottom: 0, left: 0, right: 0 }
                 });
                 const chunks = [];
                 doc.on('data', chunk => chunks.push(chunk));
                 doc.on('end', () => resolve(Buffer.concat(chunks)));
                 doc.on('error', reject);
 
+                const margin = 50;
+                const pageWidth = doc.page.width;
+                const contentWidth = pageWidth - (margin * 2);
+                let yPosition = margin;
+
                 // Title
                 doc.fontSize(24)
                     .font('Helvetica-Bold')
-                    .text(songData.name, { align: 'center' });
+                    .fillColor('#2c3e50')
+                    .text(songData.name, margin, yPosition, { width: contentWidth, align: 'center' });
 
-                doc.moveDown(2);
+                yPosition += 60;
 
                 // Performance Notes (from Canto)
                 if (canto.notes) {
-                    doc.fontSize(14)
+                    doc.fontSize(12)
                         .font('Helvetica-Bold')
-                        .text('Notas de interpretación:', { continued: true })
-                        .font('Helvetica-Oblique')
-                        .text(` ${canto.notes}`);
-                    doc.moveDown();
+                        .fillColor('#2c3e50')
+                        .text('Notas de interpretación:', margin, yPosition);
+                    
+                    yPosition += 20;
+                    
+                    doc.fontSize(11)
+                        .font('Helvetica')
+                        .fillColor('#34495e')
+                        .text(canto.notes, margin, yPosition, { width: contentWidth });
+                    
+                    yPosition += doc.heightOfString(canto.notes, { width: contentWidth }) + 30;
                 }
 
                 // General Notes (from Song)
                 if (songData.notes) {
                     doc.fontSize(12)
                         .font('Helvetica-Bold')
-                        .text('Notas generales:', { continued: true })
+                        .fillColor('#2c3e50')
+                        .text('Notas generales:', margin, yPosition);
+                    
+                    yPosition += 20;
+                    
+                    doc.fontSize(11)
                         .font('Helvetica')
-                        .text(` ${songData.notes}`);
-                    doc.moveDown();
+                        .fillColor('#34495e')
+                        .text(songData.notes, margin, yPosition, { width: contentWidth });
+                    
+                    yPosition += 30;
                 }
 
-                // Placeholder for lyrics if we had them in text
-                doc.moveDown(2);
-                doc.fontSize(10)
-                    .fillColor('#999999')
-                    .text('(Sin archivo de partitura/letra adjunto)', { align: 'center' });
+                // Placeholder for missing files
+                yPosition += 40;
+                doc.fontSize(12)
+                    .fillColor('#e74c3c')
+                    .text('⚠️ Sin archivo de partitura/letra adjunto', margin, yPosition, {
+                        width: contentWidth,
+                        align: 'center'
+                    });
 
                 doc.end();
             } catch (error) {
@@ -338,15 +361,10 @@ module.exports = ({ strapi }) => ({
     async createEventCoverPDF(event) {
         return new Promise((resolve, reject) => {
             try {
-                // Create PDF document
+                // Create PDF document with no automatic margins to have full control
                 const doc = new PDFDocument({
                     size: 'A4',
-                    margins: {
-                        top: 50,
-                        bottom: 50,
-                        left: 50,
-                        right: 50
-                    }
+                    margins: { top: 0, bottom: 0, left: 0, right: 0 }
                 });
 
                 // Collect PDF data
@@ -381,7 +399,7 @@ module.exports = ({ strapi }) => ({
         doc.fontSize(28)
             .font('Helvetica-Bold')
             .fillColor('#ffffff')
-            .text(event.name || 'Evento sin nombre', margin, 45, {
+            .text(event.name || 'Evento sin nombre', margin, 30, {
                 width: contentWidth,
                 align: 'center'
             });
@@ -398,13 +416,13 @@ module.exports = ({ strapi }) => ({
             doc.fontSize(12)
                 .font('Helvetica')
                 .fillColor('#ecf0f1')
-                .text(dateStr.charAt(0).toUpperCase() + dateStr.slice(1), margin, 85, {
+                .text(dateStr.charAt(0).toUpperCase() + dateStr.slice(1), margin, 75, {
                     width: contentWidth,
                     align: 'center'
                 });
         }
 
-        let yPosition = 150;
+        let yPosition = 140;
 
         // --- Info Grid (2 columns) ---
         const colWidth = contentWidth / 2 - 10;
@@ -519,10 +537,10 @@ module.exports = ({ strapi }) => ({
 
         // --- Program Section ---
         if (event.cantos && event.cantos.length > 0) {
-            // Check page break
-            if (yPosition > pageHeight - 150) {
-                doc.addPage();
-                yPosition = 50;
+            // Check page break (leaving room at bottom to avoid blank pages)
+            if (yPosition > pageHeight - 120) {
+                doc.addPage({ margins: { top: 0, bottom: 0, left: 0, right: 0 } });
+                yPosition = margin;
             }
 
             doc.fontSize(16)
@@ -530,17 +548,13 @@ module.exports = ({ strapi }) => ({
                 .fillColor('#2c3e50')
                 .text('Programa Musical', margin, yPosition);
 
-            // Small badge for song count
-            const countText = `${event.cantos.length} cantos`;
-            const countWidth = doc.widthOfString(countText);
-
             yPosition += 30;
 
             // List songs with better styling
             event.cantos.forEach((canto, index) => {
-                if (yPosition > pageHeight - 60) {
-                    doc.addPage();
-                    yPosition = 50;
+                if (yPosition > pageHeight - 80) {
+                    doc.addPage({ margins: { top: 0, bottom: 0, left: 0, right: 0 } });
+                    yPosition = margin;
                 }
 
                 const songName = canto.song?.name || canto.song_name || `Canto ${index + 1}`;
@@ -580,19 +594,6 @@ module.exports = ({ strapi }) => ({
             });
         }
 
-        // --- Footer ---
-        const footerY = pageHeight - 40;
-        doc.moveTo(margin, footerY - 10)
-            .lineTo(pageWidth - margin, footerY - 10)
-            .lineWidth(0.5)
-            .stroke('#bdc3c7');
-
-        doc.fontSize(9)
-            .fillColor('#95a5a6')
-            .text(`Generado el ${new Date().toLocaleDateString('es-ES')}`, margin, footerY)
-            .text('Sistema de Gestión Coral', margin, footerY, {
-                width: contentWidth,
-                align: 'right'
-            });
+        // No fixed footer - content flows naturally to end of page
     }
 });
