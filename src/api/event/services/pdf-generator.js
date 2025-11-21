@@ -170,14 +170,14 @@ module.exports = ({ strapi }) => ({
                         .font('Helvetica-Bold')
                         .fillColor('#2c3e50')
                         .text('Notas de interpretación:', margin, yPosition);
-                    
+
                     yPosition += 20;
-                    
+
                     doc.fontSize(11)
                         .font('Helvetica')
                         .fillColor('#34495e')
                         .text(canto.notes, margin, yPosition, { width: contentWidth });
-                    
+
                     yPosition += doc.heightOfString(canto.notes, { width: contentWidth }) + 30;
                 }
 
@@ -187,14 +187,14 @@ module.exports = ({ strapi }) => ({
                         .font('Helvetica-Bold')
                         .fillColor('#2c3e50')
                         .text('Notas generales:', margin, yPosition);
-                    
+
                     yPosition += 20;
-                    
+
                     doc.fontSize(11)
                         .font('Helvetica')
                         .fillColor('#34495e')
                         .text(songData.notes, margin, yPosition, { width: contentWidth });
-                    
+
                     yPosition += 30;
                 }
 
