@@ -325,24 +325,32 @@ module.exports = ({ strapi }) => ({
     async createEventCoverPDF(event) {
         return new Promise((resolve, reject) => {
             try {
-                // Create PDF document
                 const doc = new PDFDocument({
                     size: 'A4',
                     margins: {
-                        top: 50,
+                        top: 130, // Increased top margin for header
                         bottom: 50,
                         left: 50,
                         right: 50
-                    }
+                    },
+                    autoFirstPage: false // We'll add the first page manually
                 });
 
-                // Collect PDF data
                 const chunks = [];
                 doc.on('data', chunk => chunks.push(chunk));
                 doc.on('end', () => resolve(Buffer.concat(chunks)));
                 doc.on('error', reject);
 
-                // Add content to PDF
+                // Add Header and Footer to every page automatically
+                doc.on('pageAdded', () => {
+                    this.addHeader(doc, event);
+                    this.addFooter(doc);
+                });
+
+                // Add the first page explicitly
+                doc.addPage();
+
+                // Add content
                 this.addCoverContent(doc, event);
 
                 // Finalize PDF
@@ -354,9 +362,8 @@ module.exports = ({ strapi }) => ({
         });
     },
 
-    addCoverContent(doc, event) {
+    addHeader(doc, event) {
         const pageWidth = doc.page.width;
-        const pageHeight = doc.page.height;
         const margin = 50;
         const contentWidth = pageWidth - (margin * 2);
 
@@ -390,6 +397,37 @@ module.exports = ({ strapi }) => ({
                     align: 'center'
                 });
         }
+    },
+
+    addFooter(doc) {
+        const pageWidth = doc.page.width;
+        const pageHeight = doc.page.height;
+        const margin = 50;
+        const contentWidth = pageWidth - (margin * 2);
+        const footerY = pageHeight - 40;
+
+        doc.moveTo(margin, footerY - 10)
+            .lineTo(pageWidth - margin, footerY - 10)
+            .lineWidth(0.5)
+            .stroke('#bdc3c7');
+
+        doc.fontSize(9)
+            .fillColor('#95a5a6')
+            .text(`Generado el ${new Date().toLocaleDateString('es-ES')}`, margin, footerY, {
+                continued: false
+            });
+
+        doc.text('Sistema de Gestión Coral', margin, footerY, {
+            width: contentWidth,
+            align: 'right'
+        });
+    },
+
+    addCoverContent(doc, event) {
+        const pageWidth = doc.page.width;
+        const pageHeight = doc.page.height;
+        const margin = 50;
+        const contentWidth = pageWidth - (margin * 2);
 
         let yPosition = 150;
 
@@ -509,7 +547,7 @@ module.exports = ({ strapi }) => ({
             // Check page break
             if (yPosition > pageHeight - 150) {
                 doc.addPage();
-                yPosition = 50;
+                yPosition = 150; // Reset to below header
             }
 
             doc.fontSize(16)
@@ -517,17 +555,13 @@ module.exports = ({ strapi }) => ({
                 .fillColor('#2c3e50')
                 .text('Programa Musical', margin, yPosition);
 
-            // Small badge for song count
-            const countText = `${event.cantos.length} cantos`;
-            const countWidth = doc.widthOfString(countText);
-
             yPosition += 30;
 
             // List songs with better styling
             event.cantos.forEach((canto, index) => {
                 if (yPosition > pageHeight - 60) {
                     doc.addPage();
-                    yPosition = 50;
+                    yPosition = 150; // Reset to below header
                 }
 
                 const songName = canto.song?.name || canto.song_name || `Canto ${index + 1}`;
@@ -566,20 +600,5 @@ module.exports = ({ strapi }) => ({
                 }
             });
         }
-
-        // --- Footer ---
-        const footerY = pageHeight - 40;
-        doc.moveTo(margin, footerY - 10)
-            .lineTo(pageWidth - margin, footerY - 10)
-            .lineWidth(0.5)
-            .stroke('#bdc3c7');
-
-        doc.fontSize(9)
-            .fillColor('#95a5a6')
-            .text(`Generado el ${new Date().toLocaleDateString('es-ES')}`, margin, footerY)
-            .text('Sistema de Gestión Coral', margin, footerY, {
-                width: contentWidth,
-                align: 'right'
-            });
     }
 });
