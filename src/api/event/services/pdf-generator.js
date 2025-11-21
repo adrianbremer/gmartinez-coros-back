@@ -220,7 +220,7 @@ module.exports = ({ strapi }) => ({
                 yPosition += 40;
                 doc.fontSize(12)
                     .fillColor('#e74c3c')
-                    .text('⚠️ Sin archivo de partitura/letra adjunto', margin, yPosition, {
+                    .text('Sin archivo de partitura/letra adjunto', margin, yPosition, {
                         width: contentWidth,
                         align: 'center'
                     });
@@ -449,7 +449,7 @@ module.exports = ({ strapi }) => ({
             doc.fontSize(12)
                 .font('Helvetica-Bold')
                 .fillColor('#e67e22')
-                .text('⚠️ Instrucciones Especiales', margin + boxPadding, boxY + boxPadding);
+                .text('Instrucciones Especiales', margin + boxPadding, boxY + boxPadding);
 
             // Text inside box
             doc.fontSize(11)
@@ -535,7 +535,7 @@ module.exports = ({ strapi }) => ({
             doc.fontSize(10)
                 .font('Helvetica-Bold')
                 .fillColor('#ffffff')
-                .text(order.toString(), margin, yPosition, {
+                .text(order.toString(), margin, (yPosition + 1), {
                     width: 20,
                     align: 'center'
                 });
