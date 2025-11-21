@@ -327,28 +327,19 @@ module.exports = ({ strapi }) => ({
         doc.fontSize(28)
             .font('Helvetica-Bold')
             .fillColor('#ffffff')
-            .text(event.name || 'Evento sin nombre', margin, 30, {
+            .text(event.name || 'Evento sin nombre', margin, 25, {
                 width: contentWidth,
                 align: 'center'
             });
 
-        // --- Subtitle / Date in Header ---
-        if (event.event_date) {
-            const eventDate = new Date(event.event_date);
-            const dateStr = eventDate.toLocaleDateString('es-ES', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
+        // --- Subtitle in Header ---
+        doc.fontSize(12)
+            .font('Helvetica-Oblique')
+            .fillColor('#ecf0f1')
+            .text('Información General', margin, 75, {
+                width: contentWidth,
+                align: 'center'
             });
-            doc.fontSize(12)
-                .font('Helvetica')
-                .fillColor('#ecf0f1')
-                .text(dateStr.charAt(0).toUpperCase() + dateStr.slice(1), margin, 75, {
-                    width: contentWidth,
-                    align: 'center'
-                });
-        }
 
         let yPosition = 140;
 
@@ -364,11 +355,26 @@ module.exports = ({ strapi }) => ({
 
         if (event.event_date) {
             const eventDate = new Date(event.event_date);
+
+            // Date
+            doc.fontSize(10).font('Helvetica-Bold').text('FECHA', leftColX, leftY);
+            leftY += 15;
+            const dateStr = eventDate.toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            doc.fontSize(12).font('Helvetica').text(dateStr.charAt(0).toUpperCase() + dateStr.slice(1), leftColX, leftY);
+            leftY += 30;
+
+            // Time in 12h format
             doc.fontSize(10).font('Helvetica-Bold').text('HORA', leftColX, leftY);
             leftY += 15;
             doc.fontSize(12).font('Helvetica').text(eventDate.toLocaleTimeString('es-ES', {
-                hour: '2-digit',
-                minute: '2-digit'
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
             }), leftColX, leftY);
             leftY += 30;
         }
@@ -392,7 +398,17 @@ module.exports = ({ strapi }) => ({
             doc.fontSize(10).font('Helvetica-Bold').text('VESTIMENTA', rightColX, rightY);
             rightY += 15;
             doc.fontSize(12).font('Helvetica').text(event.vestment_requirement.name, rightColX, rightY, { width: colWidth });
-            rightY += 30;
+            rightY += doc.heightOfString(event.vestment_requirement.name, { width: colWidth }) + 10;
+
+            // Show vestment description if available
+            if (event.vestment_requirement.description) {
+                doc.fontSize(9).font('Helvetica').fillColor('#7f8c8d').text(event.vestment_requirement.description, rightColX, rightY, { width: colWidth });
+                rightY += doc.heightOfString(event.vestment_requirement.description, { width: colWidth }) + 20;
+            } else {
+                rightY += 20;
+            }
+        } else {
+            rightY += 20;
         }
 
         // Sync Y position to the lowest column
@@ -496,27 +512,28 @@ module.exports = ({ strapi }) => ({
         let yPosition = margin;
 
         // --- Header Background ---
-        doc.rect(0, 0, pageWidth, 100)
+        doc.rect(0, 0, pageWidth, 120)
             .fill('#2c3e50');
 
         // --- Title Section ---
-        doc.fontSize(24)
+        doc.fontSize(28)
             .font('Helvetica-Bold')
             .fillColor('#ffffff')
-            .text('Programa Musical', margin, 30, {
+            .text(event.name || 'Evento sin nombre', margin, 25, {
                 width: contentWidth,
                 align: 'center'
             });
 
+        // --- Subtitle in Header ---
         doc.fontSize(12)
-            .font('Helvetica')
+            .font('Helvetica-Oblique')
             .fillColor('#ecf0f1')
-            .text(`${event.cantos.length} cantos`, margin, 65, {
+            .text('Programa Musical', margin, 75, {
                 width: contentWidth,
                 align: 'center'
             });
 
-        yPosition = 120;
+        yPosition = 140;
 
         // --- List songs with better styling ---
         event.cantos.forEach((canto, index) => {
@@ -535,7 +552,7 @@ module.exports = ({ strapi }) => ({
             doc.fontSize(10)
                 .font('Helvetica-Bold')
                 .fillColor('#ffffff')
-                .text(order.toString(), margin, (yPosition + 1), {
+                .text(order.toString(), margin, (yPosition + 2), {
                     width: 20,
                     align: 'center'
                 });
