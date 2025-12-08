@@ -15,24 +15,12 @@ COPY package*.json ./
 # Install dependencies and rebuild native modules regardless of environment
 RUN npm ci && npm rebuild sharp @swc/core || true
 
-# Debug: Check what's in the directory before copying source
-RUN echo "=== BEFORE COPYING SOURCE ===" && ls -la
-
 # Copy source
 COPY . .
-
-# Debug: Check src folder immediately after copy
-RUN echo "=== IMMEDIATELY AFTER COPY ===" && ls -la && echo "=== SRC FOLDER CONTENTS ===" && ls -la src/ || echo "src folder missing after copy"
-
-# Debug: Check src folder before build
-RUN echo "=== BEFORE BUILD ===" && ls -la && echo "=== SRC FOLDER CONTENTS ===" && ls -la src/ || echo "src folder missing before build"
 
 # Accept build argument for NODE_ENV
 ARG NODE_ENV=production
 ENV NODE_ENV=$NODE_ENV
-
-# Debug: Show NODE_ENV value
-RUN echo "=== NODE_ENV is: $NODE_ENV ==="
 
 # Skip build for development - only build in production
 RUN if [ "$NODE_ENV" = "production" ]; then \
@@ -41,9 +29,6 @@ RUN if [ "$NODE_ENV" = "production" ]; then \
     else \
         echo "=== SKIPPING BUILD FOR DEVELOPMENT (NODE_ENV=$NODE_ENV) ==="; \
     fi
-
-# Debug: Check src folder after build
-RUN echo "=== AFTER BUILD ===" && ls -la && echo "=== SRC FOLDER CONTENTS ===" && ls -la src/ || echo "src folder missing after build"
 
 # Create uploads directory
 RUN mkdir -p public/uploads
