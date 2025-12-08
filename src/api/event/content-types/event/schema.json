@@ -1,92 +1,92 @@
 {
-    "kind": "collectionType",
-    "collectionName": "events",
-    "info": {
-        "singularName": "event",
-        "pluralName": "events",
-        "displayName": "Evento",
-        "description": "Gestión de eventos y celebraciones"
+  "kind": "collectionType",
+  "collectionName": "events",
+  "info": {
+    "singularName": "event",
+    "pluralName": "events",
+    "displayName": "Evento",
+    "description": "Gestión de eventos y celebraciones"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string",
+      "maxLength": 255,
+      "required": true
     },
-    "options": {
-        "draftAndPublish": false
+    "description": {
+      "type": "text"
     },
-    "pluginOptions": {},
-    "attributes": {
-        "name": {
-            "type": "string",
-            "maxLength": 255,
-            "required": true
-        },
-        "description": {
-            "type": "text"
-        },
-        "event_date": {
-            "type": "datetime",
-            "required": true
-        },
-        "venue": {
-            "type": "string"
-        },
-        "special_instructions": {
-            "type": "text"
-        },
-        "vestment_requirement": {
-            "type": "relation",
-            "relation": "manyToOne",
-            "target": "api::vestment.vestment",
-            "displayName": "Vestment Required"
-        },
-        "event_contact": {
-            "type": "component",
-            "component": "event.event-contacts",
-            "repeatable": false
-        },
-        "is_active": {
-            "type": "boolean",
-            "required": true,
-            "default": true
-        },
-        "program_notes": {
-            "type": "text"
-        },
-        "cantos": {
-            "type": "component",
-            "component": "event.canto-entry",
-            "repeatable": true
-        },
-        "location": {
-            "type": "customField",
-            "customField": "plugin::google-maps.location-picker"
-        },
-        "coro": {
-            "type": "relation",
-            "relation": "manyToOne",
-            "target": "api::choir.choir",
-            "inversedBy": "eventos"
-        },
-        "tiempo_liturgico": {
-            "type": "relation",
-            "relation": "manyToOne",
-            "target": "api::liturgical-season.liturgical-season",
-            "inversedBy": "eventos"
-        },
-        "attendances": {
-            "type": "relation",
-            "relation": "oneToMany",
-            "target": "api::attendance.attendance",
-            "mappedBy": "event"
-        },
-        "pdf_path": {
-            "type": "string"
-        },
-        "pdf_filename": {
-            "type": "string"
-        },
-        "pdf_generated_at": {
-            "type": "datetime"
-        },
-        "pdf_error": {
-            "type": "string"
-        }
+    "event_date": {
+      "type": "datetime",
+      "required": true
+    },
+    "venue": {
+      "type": "string"
+    },
+    "special_instructions": {
+      "type": "text"
+    },
+    "vestment_requirement": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::vestment.vestment",
+      "displayName": "Vestment Required"
+    },
+    "event_contact": {
+      "type": "component",
+      "component": "event.event-contacts",
+      "repeatable": false
+    },
+    "is_active": {
+      "type": "boolean",
+      "required": true,
+      "default": true
+    },
+    "program_notes": {
+      "type": "text"
+    },
+    "cantos": {
+      "type": "component",
+      "component": "event.canto-entry",
+      "repeatable": true
+    },
+    "location": {
+      "type": "customField",
+      "customField": "plugin::google-maps.location-picker"
+    },
+    "coro": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::choir.choir",
+      "inversedBy": "eventos"
+    },
+    "tiempo_liturgico": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::liturgical-season.liturgical-season",
+      "inversedBy": "eventos"
+    },
+    "attendances": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::attendance.attendance",
+      "mappedBy": "event"
+    },
+    "pdf_path": {
+      "type": "string"
+    },
+    "pdf_filename": {
+      "type": "string"
+    },
+    "pdf_generated_at": {
+      "type": "datetime"
+    },
+    "pdf_error": {
+      "type": "string"
     }
+  }
 }

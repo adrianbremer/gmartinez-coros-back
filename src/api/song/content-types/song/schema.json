@@ -57,11 +57,11 @@
       "required": true,
       "default": true
     },
-    "coro": {
+    "choirs": {
       "type": "relation",
-      "relation": "manyToOne",
+      "relation": "manyToMany",
       "target": "api::choir.choir",
-      "inversedBy": "cantos"
+      "mappedBy": "chants"
     },
     "url_youtube": {
       "type": "string"

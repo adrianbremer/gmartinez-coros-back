@@ -429,7 +429,7 @@ export interface ApiChoirChoir extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
-    cantos: Schema.Attribute.Relation<'oneToMany', 'api::song.song'>;
+    chants: Schema.Attribute.Relation<'manyToMany', 'api::song.song'>;
     contact_email: Schema.Attribute.Email;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -700,7 +700,7 @@ export interface ApiSongSong extends Struct.CollectionTypeSchema {
   };
   attributes: {
     backing_track_file: Schema.Attribute.Media<'audios'>;
-    coro: Schema.Attribute.Relation<'manyToOne', 'api::choir.choir'>;
+    choirs: Schema.Attribute.Relation<'manyToMany', 'api::choir.choir'>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

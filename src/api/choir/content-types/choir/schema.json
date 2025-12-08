@@ -38,11 +38,11 @@
       "target": "api::vestment.vestment",
       "mappedBy": "coro"
     },
-    "cantos": {
+    "chants": {
       "type": "relation",
-      "relation": "oneToMany",
+      "relation": "manyToMany",
       "target": "api::song.song",
-      "mappedBy": "coro"
+      "inversedBy": "choirs"
     },
     "eventos": {
       "type": "relation",
