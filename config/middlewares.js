@@ -64,6 +64,7 @@ module.exports = [
             credentials: true,
             methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+            exposedHeaders: ['Content-Disposition', 'Content-Length'],
         }
     },
     'strapi::poweredBy',
