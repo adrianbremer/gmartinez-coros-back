@@ -7,6 +7,7 @@
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs-extra');
+const { time } = require('console');
 
 module.exports = ({ strapi }) => ({
 
@@ -286,6 +287,35 @@ module.exports = ({ strapi }) => ({
         }
     },
 
+    addHeader(doc, title, subtitle) {
+        const pageWidth = doc.page.width;
+        const pageHeight = doc.page.height;
+        const margin = 50;
+        const contentWidth = pageWidth - (margin * 2);
+
+        // --- Header Background ---
+        doc.rect(0, 0, pageWidth, 120)
+            .fill('#2c3e50');
+
+        // --- Title Section ---
+        doc.fontSize(28)
+            .font('Helvetica-Bold')
+            .fillColor('#ffffff')
+            .text(title || 'Evento sin nombre', margin, 25, {
+                width: contentWidth,
+                align: 'center'
+            });
+
+        // --- Subtitle in Header ---
+        doc.fontSize(12)
+            .font('Helvetica-Oblique')
+            .fillColor('#ecf0f1')
+            .text(subtitle, margin, 75, {
+                width: contentWidth,
+                align: 'center'
+            });
+    },
+
     async createEventCoverPDF(event) {
         return new Promise((resolve, reject) => {
             try {
@@ -318,28 +348,10 @@ module.exports = ({ strapi }) => ({
         const pageHeight = doc.page.height;
         const margin = 50;
         const contentWidth = pageWidth - (margin * 2);
+        //const timeZone = 'America/Mexico_City'; // adjust if your locale differs
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
-        // --- Header Background ---
-        doc.rect(0, 0, pageWidth, 120)
-            .fill('#2c3e50');
-
-        // --- Title Section ---
-        doc.fontSize(28)
-            .font('Helvetica-Bold')
-            .fillColor('#ffffff')
-            .text(event.name || 'Evento sin nombre', margin, 25, {
-                width: contentWidth,
-                align: 'center'
-            });
-
-        // --- Subtitle in Header ---
-        doc.fontSize(12)
-            .font('Helvetica-Oblique')
-            .fillColor('#ecf0f1')
-            .text('Información General', margin, 75, {
-                width: contentWidth,
-                align: 'center'
-            });
+        this.addHeader(doc, event.name, 'Información General');
 
         let yPosition = 140;
 
@@ -359,7 +371,8 @@ module.exports = ({ strapi }) => ({
             // Date
             doc.fontSize(10).font('Helvetica-Bold').text('FECHA', leftColX, leftY);
             leftY += 15;
-            const dateStr = eventDate.toLocaleDateString('es-ES', {
+            const dateStr = eventDate.toLocaleDateString('es-MX', {
+                timeZone: timeZone,
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
@@ -371,7 +384,8 @@ module.exports = ({ strapi }) => ({
             // Time in 12h format
             doc.fontSize(10).font('Helvetica-Bold').text('HORA', leftColX, leftY);
             leftY += 15;
-            doc.fontSize(12).font('Helvetica').text(eventDate.toLocaleTimeString('es-ES', {
+            doc.fontSize(12).font('Helvetica').text(eventDate.toLocaleTimeString('es-MX', {
+                timeZone: timeZone,
                 hour: 'numeric',
                 minute: '2-digit',
                 hour12: true
@@ -511,27 +525,7 @@ module.exports = ({ strapi }) => ({
         const contentWidth = pageWidth - (margin * 2);
         let yPosition = margin;
 
-        // --- Header Background ---
-        doc.rect(0, 0, pageWidth, 120)
-            .fill('#2c3e50');
-
-        // --- Title Section ---
-        doc.fontSize(28)
-            .font('Helvetica-Bold')
-            .fillColor('#ffffff')
-            .text(event.name || 'Evento sin nombre', margin, 25, {
-                width: contentWidth,
-                align: 'center'
-            });
-
-        // --- Subtitle in Header ---
-        doc.fontSize(12)
-            .font('Helvetica-Oblique')
-            .fillColor('#ecf0f1')
-            .text('Programa Musical', margin, 75, {
-                width: contentWidth,
-                align: 'center'
-            });
+        this.addHeader(doc, event.name, 'Programa Musical');
 
         yPosition = 140;
 
