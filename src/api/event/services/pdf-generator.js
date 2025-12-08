@@ -162,7 +162,7 @@ module.exports = ({ strapi }) => ({
         return new Promise((resolve, reject) => {
             try {
                 const doc = new PDFDocument({
-                    size: 'A4',
+                    size: 'LETTER',
                     margins: { top: 0, bottom: 0, left: 0, right: 0 }
                 });
                 const chunks = [];
@@ -248,7 +248,7 @@ module.exports = ({ strapi }) => ({
 
             // Create a blank page PDF
             const blankPageBuffer = await new Promise((resolve, reject) => {
-                const doc = new PDFDocument({ size: 'A4' });
+                const doc = new PDFDocument({ size: 'LETTER' });
                 const chunks = [];
                 doc.on('data', chunk => chunks.push(chunk));
                 doc.on('end', () => resolve(Buffer.concat(chunks)));
@@ -301,7 +301,7 @@ module.exports = ({ strapi }) => ({
         doc.fontSize(28)
             .font('Helvetica-Bold')
             .fillColor('#ffffff')
-            .text(title || 'Evento sin nombre', margin, 25, {
+            .text(title, margin, 25, {
                 width: contentWidth,
                 align: 'center'
             });
@@ -310,7 +310,7 @@ module.exports = ({ strapi }) => ({
         doc.fontSize(12)
             .font('Helvetica-Oblique')
             .fillColor('#ecf0f1')
-            .text(subtitle, margin, 75, {
+            .text(subtitle, {
                 width: contentWidth,
                 align: 'center'
             });
@@ -321,7 +321,7 @@ module.exports = ({ strapi }) => ({
             try {
                 // Create PDF document with no automatic margins to have full control
                 const doc = new PDFDocument({
-                    size: 'A4',
+                    size: 'LETTER',
                     margins: { top: 0, bottom: 0, left: 0, right: 0 }
                 });
 
@@ -348,10 +348,10 @@ module.exports = ({ strapi }) => ({
         const pageHeight = doc.page.height;
         const margin = 50;
         const contentWidth = pageWidth - (margin * 2);
-        //const timeZone = 'America/Mexico_City'; // adjust if your locale differs
-        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+        const timeZone = 'America/Mexico_City'; // adjust if your locale differs
+        //const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
-        this.addHeader(doc, event.name, 'Información General');
+        this.addHeader(doc, event.name || 'Evento sin nombre', 'Información General');
 
         let yPosition = 140;
 
@@ -397,7 +397,14 @@ module.exports = ({ strapi }) => ({
             doc.fontSize(10).font('Helvetica-Bold').text('LUGAR', leftColX, leftY);
             leftY += 15;
             doc.fontSize(12).font('Helvetica').text(event.venue, leftColX, leftY, { width: colWidth });
-            leftY += doc.heightOfString(event.venue, { width: colWidth }) + 20;
+            leftY += 30;
+        }
+
+        if (event.description) {
+            doc.fontSize(10).font('Helvetica-Bold').text('DESCRIPCIÓN', leftColX, leftY);
+            leftY += 15;
+            doc.fontSize(12).font('Helvetica').text(event.description, leftColX, leftY, { width: colWidth });
+            leftY += 30;
         }
 
         // Right Column: Choir & Type
@@ -412,7 +419,7 @@ module.exports = ({ strapi }) => ({
             doc.fontSize(10).font('Helvetica-Bold').text('VESTIMENTA', rightColX, rightY);
             rightY += 15;
             doc.fontSize(12).font('Helvetica').text(event.vestment_requirement.name, rightColX, rightY, { width: colWidth });
-            rightY += doc.heightOfString(event.vestment_requirement.name, { width: colWidth }) + 10;
+            rightY += doc.heightOfString(event.vestment_requirement.name, { width: colWidth });
 
             // Show vestment description if available
             if (event.vestment_requirement.description) {
@@ -435,27 +442,6 @@ module.exports = ({ strapi }) => ({
             .stroke('#bdc3c7');
 
         yPosition += 30;
-
-        // --- Description Section ---
-        if (event.description) {
-            doc.fontSize(14)
-                .font('Helvetica-Bold')
-                .fillColor('#2c3e50')
-                .text('Descripción', margin, yPosition);
-
-            yPosition += 20;
-
-            doc.fontSize(11)
-                .font('Helvetica')
-                .fillColor('#34495e')
-                .text(event.description, margin, yPosition, {
-                    width: contentWidth,
-                    align: 'justify',
-                    lineGap: 2
-                });
-
-            yPosition += doc.heightOfString(event.description, { width: contentWidth }) + 25;
-        }
 
         // --- Special Instructions Box ---
         if (event.special_instructions) {
@@ -493,14 +479,48 @@ module.exports = ({ strapi }) => ({
             yPosition += boxHeight + 30;
         }
 
-        // No fixed footer - content flows naturally to end of page
+        // --- Program Notes Box ---
+        if (event.program_notes) {
+            const boxY = yPosition;
+            const boxPadding = 15;
+
+            // Calculate height needed
+            doc.fontSize(11).font('Helvetica');
+            const textHeight = doc.heightOfString(event.program_notes, { width: contentWidth - (boxPadding * 2) });
+            const boxHeight = textHeight + (boxPadding * 2) + 25; // +25 for title
+
+            // Draw box background
+            doc.rect(margin, boxY, contentWidth, boxHeight)
+                .fill('#f8f9fa');
+
+            // Box Border
+            doc.rect(margin, boxY, contentWidth, boxHeight)
+                .stroke('#e9ecef');
+
+            // Title inside box
+            doc.fontSize(12)
+                .font('Helvetica-Bold')
+                .fillColor('#e67e22')
+                .text('Notas del programa', margin + boxPadding, boxY + boxPadding);
+
+            // Text inside box
+            doc.fontSize(11)
+                .font('Helvetica')
+                .fillColor('#2c3e50')
+                .text(event.program_notes, margin + boxPadding, boxY + boxPadding + 25, {
+                    width: contentWidth - (boxPadding * 2),
+                    align: 'left'
+                });
+
+            yPosition += boxHeight + 30;
+        }
     },
 
     async createProgramPagePDF(event) {
         return new Promise((resolve, reject) => {
             try {
                 const doc = new PDFDocument({
-                    size: 'A4',
+                    size: 'LETTER',
                     margins: { top: 0, bottom: 0, left: 0, right: 0 }
                 });
 
