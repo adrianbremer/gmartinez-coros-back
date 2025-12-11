@@ -11,11 +11,11 @@ const { time } = require('console');
 
 module.exports = ({ strapi }) => ({
 
-    async generateEventCoverPDF(eventId) {
+    async generateEventCoverPDF(id) {
         try {
             // Get event data with all related information
-            const event = await strapi.entityService.findOne('api::event.event', eventId, {
-                populate: {
+            const event = await strapi.documents('api::event.event').findOne({
+                documentId: id, populate: {
                     vestment_requirement: true,
                     coro: true,
                     cantos: {
@@ -25,7 +25,7 @@ module.exports = ({ strapi }) => ({
             });
 
             if (!event) {
-                throw new Error(`Event with ID ${eventId} not found`);
+                throw new Error(`Event with ID ${id} not found`);
             }
 
             // Generate the cover PDF
@@ -55,14 +55,14 @@ module.exports = ({ strapi }) => ({
 
             if (pdfBuffersToMerge.length === 1) {
                 // Just the cover
-                strapi.log.info(`📋 Event ${eventId}: Generated cover PDF only (no songs)`);
+                strapi.log.info(`📋 Event ${id}: Generated cover PDF only (no songs)`);
                 return coverPdfBuffer;
             }
 
             // Merge all PDFs
             const finalPdfBuffer = await this.mergePDFBuffers(pdfBuffersToMerge, event);
 
-            strapi.log.info(`📋 Event ${eventId}: Generated complete PDF with program and ${songPDFs.length} song pages`);
+            strapi.log.info(`📋 Event ${id}: Generated complete PDF with program and ${songPDFs.length} song pages`);
             return finalPdfBuffer;
         } catch (error) {
             strapi.log.error('Error generating event PDF:', error);

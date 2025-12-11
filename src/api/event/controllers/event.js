@@ -7,53 +7,6 @@
 const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController('api::event.event', ({ strapi }) => ({
-
-    // Implementación limpia de findOne
-    async findOne(ctx) {
-        const { id } = ctx.params;
-
-        try {
-            const { query } = await this.sanitizeQuery(ctx);
-
-            // Merge with forced populate for vestment_requirement and cantos with song and all media files
-            const populateConfig = {
-                ...query,
-                populate: {
-                    vestment_requirement: true,
-                    event_contact: true,
-                    coro: true,
-                    tiempo_liturgico: true,
-                    cantos: {
-                        populate: {
-                            song: {
-                                populate: {
-                                    lyrics_file: true,
-                                    sheet_music_file: true,
-                                    recording_file: true,
-                                    backing_track_file: true
-                                }
-                            }
-                        }
-                    }
-                }
-            };
-
-            const entity = await strapi.entityService.findOne('api::event.event', id, populateConfig);
-
-            if (!entity) {
-                return ctx.notFound('Event not found');
-            }
-
-            const sanitizedEntity = await this.sanitizeOutput(entity, ctx);
-
-            return this.transformResponse(sanitizedEntity);
-
-        } catch (error) {
-            strapi.log.error('Event findOne error:', error);
-            return ctx.internalServerError('Internal server error');
-        }
-    },
-
     // Endpoint personalizado para actualizar nombres de cantos en eventos existentes
     async updateSongNames(ctx) {
         try {
@@ -113,9 +66,7 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
             }
 
             // Verificar que el evento existe
-            const event = await strapi.entityService.findOne('api::event.event', id, {
-                fields: ['name', 'event_date']
-            });
+            const event = await strapi.documents('api::event.event').findOne({ documentId: id, fields: ['name', 'event_date'] });
 
             if (!event) {
                 return ctx.notFound('Event not found');
@@ -123,26 +74,19 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
 
             // Generar PDF
             let pdfBuffer;
+
             try {
                 pdfBuffer = await strapi
                     .service('api::event.pdf-generator')
                     .generateEventCoverPDF(id);
             } catch (pdfError) {
                 strapi.log.error('PDF generation failed:', pdfError);
-
-                // Fallback: devolver PDF mínimo
-                pdfBuffer = Buffer.from(
-                    '%PDF-1.4\n' +
-                    '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n' +
-                    '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n' +
-                    '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>\nendobj\n' +
-                    'trailer\n<< /Root 1 0 R >>\n%%EOF\n',
-                    'utf-8'
-                );
+                ctx.throw(500, 'Fatal error generating PDF');
             }
 
             // Construir nombre de archivo: YYMMDD_HH:MM_<EventName>.pdf
             let filename = 'evento.pdf';
+
             if (event.event_date) {
                 const eventDateTime = new Date(event.event_date);
                 const year = String(eventDateTime.getFullYear()).slice(-2);
@@ -156,38 +100,21 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
                     ? event.name.trim().replace(/[^a-z0-9\s]/gi, '').replace(/\s+/g, '_').toLowerCase()
                     : 'evento';
 
-                filename = `${year}${month}${day}_${hours}:${minutes}_${sanitizedName}.pdf`;
+                filename = `${year}${month}${day}_${hours}${minutes}-${sanitizedName}.pdf`;
             }
 
             // Enviar PDF
             ctx.set({
                 'Content-Type': 'application/pdf',
                 'Content-Disposition': `attachment; filename="${filename}"`,
-                'Content-Length': pdfBuffer.length
+                'Content-Length': pdfBuffer.length,
+                'Access-Control-Expose-Headers': 'Content-Disposition'
             });
 
             ctx.body = pdfBuffer;
-
         } catch (error) {
             strapi.log.error('Fatal error in generatePDF:', error);
-
-            // Último fallback: siempre devolver algo
-            const fallbackPdf = Buffer.from(
-                '%PDF-1.4\n' +
-                '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n' +
-                '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n' +
-                '3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] >>\nendobj\n' +
-                'trailer\n<< /Root 1 0 R >>\n%%EOF\n',
-                'utf-8'
-            );
-
-            ctx.set({
-                'Content-Type': 'application/pdf',
-                'Content-Disposition': 'attachment; filename="error-fallback.pdf"',
-                'Content-Length': fallbackPdf.length
-            });
-
-            ctx.body = fallbackPdf;
+            ctx.throw(500, 'Fatal error generating PDF');
         }
     },
 
