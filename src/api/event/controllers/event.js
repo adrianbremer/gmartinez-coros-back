@@ -85,23 +85,20 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
             }
 
             // Construir nombre de archivo: YYMMDD_HH:MM_<EventName>.pdf
-            let filename = 'evento.pdf';
+            let filename = event.name.trim().replace(/[^a-z0-9\s]/gi, '').replace(/\s+/g, '_').toLowerCase();
 
             if (event.event_date) {
                 const eventDateTime = new Date(event.event_date);
-                const year = String(eventDateTime.getFullYear()).slice(-2);
-                const month = String(eventDateTime.getMonth() + 1).padStart(2, '0');
-                const day = String(eventDateTime.getDate()).padStart(2, '0');
-                const hours = String(eventDateTime.getHours()).padStart(2, '0');
-                const minutes = String(eventDateTime.getMinutes()).padStart(2, '0');
+                const year = String(eventDateTime.getUTCFullYear()).slice(-2);
+                const month = String(eventDateTime.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(eventDateTime.getUTCDate()).padStart(2, '0');
+                const hours = String(eventDateTime.getUTCHours()).padStart(2, '0');
+                const minutes = String(eventDateTime.getUTCMinutes()).padStart(2, '0');
 
-                // Sanitize event name: remove special characters, replace spaces with underscores
-                const sanitizedName = event.name
-                    ? event.name.trim().replace(/[^a-z0-9\s]/gi, '').replace(/\s+/g, '_').toLowerCase()
-                    : 'evento';
-
-                filename = `${year}${month}${day}_${hours}${minutes}-${sanitizedName}.pdf`;
+                filename = `${year}${month}${day}_${hours}${minutes}-${filename}`;
             }
+
+            filename = `${filename}.pdf`;
 
             // Enviar PDF
             ctx.set({
