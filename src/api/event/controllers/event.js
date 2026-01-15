@@ -89,11 +89,24 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
 
             if (event.event_date) {
                 const eventDateTime = new Date(event.event_date);
-                const year = String(eventDateTime.getUTCFullYear()).slice(-2);
-                const month = String(eventDateTime.getUTCMonth() + 1).padStart(2, '0');
-                const day = String(eventDateTime.getUTCDate()).padStart(2, '0');
-                const hours = String(eventDateTime.getUTCHours()).padStart(2, '0');
-                const minutes = String(eventDateTime.getUTCMinutes()).padStart(2, '0');
+                const formatter = new Intl.DateTimeFormat('es-MX', {
+                    timeZone: 'America/Monterrey',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+
+                const parts = formatter.formatToParts(eventDateTime);
+                const partsMap = Object.fromEntries(parts.map(p => [p.type, p.value]));
+
+                const year = partsMap.year.slice(-2);
+                const month = partsMap.month;
+                const day = partsMap.day;
+                const hours = partsMap.hour;
+                const minutes = partsMap.minute;
 
                 filename = `${year}${month}${day}_${hours}${minutes}-${filename}`;
             }
