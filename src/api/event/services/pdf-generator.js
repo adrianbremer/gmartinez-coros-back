@@ -19,7 +19,7 @@ module.exports = ({ strapi }) => ({
                     vestment_requirement: true,
                     coro: true,
                     cantos: {
-                        populate: ['song']
+                        populate: ['song', 'tiempo_de_celebracion']
                     }
                 }
             });
@@ -556,7 +556,6 @@ module.exports = ({ strapi }) => ({
                 yPosition = margin;
             }
 
-            const songName = canto.song?.name || canto.song_name || `Canto ${index + 1}`;
             const order = canto.performance_order || (index + 1);
 
             // Song Number Circle
@@ -571,11 +570,18 @@ module.exports = ({ strapi }) => ({
                     align: 'center'
                 });
 
+            // Tiempo de celebracion
+            let songName = canto.song?.name || canto.song_name || `Canto ${index + 1}`;
+
+            if (canto.tiempo_de_celebracion) {
+                songName = `[${canto.tiempo_de_celebracion.name}] ${songName}`;
+            }
+
             // Song Title
             doc.fontSize(12)
                 .font('Helvetica-Bold')
                 .fillColor('#2c3e50')
-                .text(songName, margin + 35, yPosition);
+                .text(songName, margin + 25, (yPosition + 1));
 
             // Notes
             if (canto.notes) {
