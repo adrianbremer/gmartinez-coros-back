@@ -32,6 +32,12 @@
             "min": 1,
             "displayName": "Performance Order",
             "description": "Order in which this song should be performed"
+        },
+        "tiempo_de_celebracion": {
+            "type": "relation",
+            "relation": "manyToOne",
+            "target": "api::liturgical-section.liturgical-section",
+            "displayName": "Tiempo de celebracion"
         }
     }
 }

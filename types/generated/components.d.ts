@@ -45,6 +45,10 @@ export interface EventCantoEntry extends Struct.ComponentSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 255;
       }>;
+    tiempo_de_celebracion: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::liturgical-section.liturgical-section'
+    >;
   };
 }
 
