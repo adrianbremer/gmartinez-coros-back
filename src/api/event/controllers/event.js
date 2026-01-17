@@ -65,8 +65,12 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
                 return ctx.badRequest('Event ID is required');
             }
 
-            // Verificar que el evento existe
-            const event = await strapi.documents('api::event.event').findOne({ documentId: id, fields: ['name', 'event_date'] });
+            // Verificar que el evento existe (incluyendo el coro relacionado)
+            const event = await strapi.documents('api::event.event').findOne({
+                documentId: id,
+                fields: ['name', 'event_date'],
+                populate: { coro: { fields: ['id'] } }
+            });
 
             if (!event) {
                 return ctx.notFound('Event not found');
@@ -86,6 +90,11 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
 
             // Construir nombre de archivo: YYMMDD_HH:MM_<EventName>.pdf
             let filename = event.name.trim().replace(/[^a-z0-9\s]/gi, '').replace(/\s+/g, '_').toLowerCase();
+
+            if (event.coro) {
+                let formattedCoroId = String(event.coro.id).padStart(3, '0');
+                filename = `${formattedCoroId}-${filename}`;
+            }
 
             if (event.event_date) {
                 const eventDateTime = new Date(event.event_date);
