@@ -82,7 +82,7 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
             try {
                 pdfBuffer = await strapi
                     .service('api::event.pdf-generator')
-                    .generateEventCoverPDF(id);
+                    .generateEventPDF(id);
             } catch (pdfError) {
                 strapi.log.error('PDF generation failed:', pdfError);
                 ctx.throw(500, 'Fatal error generating PDF');

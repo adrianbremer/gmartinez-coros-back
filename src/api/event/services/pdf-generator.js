@@ -11,7 +11,7 @@ const { time } = require('console');
 
 module.exports = ({ strapi }) => ({
 
-    async generateEventCoverPDF(id) {
+    async generateEventPDF(id) {
         try {
             // Get event data with all related information
             const event = await strapi.documents('api::event.event').findOne({
@@ -28,7 +28,7 @@ module.exports = ({ strapi }) => ({
                 throw new Error(`Event with ID ${id} not found`);
             }
 
-            // Generate the cover PDF
+            // Generate the cover page
             const coverPdfBuffer = await this.createEventCoverPDF(event);
 
             // Generate the program page PDF
@@ -120,6 +120,7 @@ module.exports = ({ strapi }) => ({
                 // Priority 2: Sheet Music PDF (if no lyrics PDF)
                 if (!pdfPath && songData && songData.sheet_music_file && songData.sheet_music_file.url) {
                     const fileExtension = path.extname(songData.sheet_music_file.url).toLowerCase();
+
                     if (fileExtension === '.pdf') {
                         const fullPath = path.join(process.cwd(), 'public', songData.sheet_music_file.url);
                         if (await fs.pathExists(fullPath)) {
@@ -149,7 +150,6 @@ module.exports = ({ strapi }) => ({
                         order: canto.performance_order || 0
                     });
                 }
-
             } catch (error) {
                 strapi.log.error(`Error preparing PDF for canto ${canto.id}:`, error);
             }
