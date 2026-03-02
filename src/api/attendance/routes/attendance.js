@@ -40,9 +40,8 @@ module.exports = {
             path: '/attendances/respond',
             handler: 'api::attendance.attendance.respondToInvitation',
             config: {
-                auth: {
-                    scope: ['authenticated']
-                },
+                policies: [],
+                middlewares: [],
             },
         },
         {
@@ -50,19 +49,8 @@ module.exports = {
             path: '/attendances/event/:eventId',
             handler: 'api::attendance.attendance.getEventAttendances',
             config: {
-                auth: {
-                    scope: ['authenticated']
-                },
-            },
-        },
-        {
-            method: 'GET',
-            path: '/attendances/my-invitations',
-            handler: 'api::attendance.attendance.getMyInvitations',
-            config: {
-                auth: {
-                    scope: ['authenticated']
-                },
+                policies: [],
+                middlewares: [],
             },
         },
         {
@@ -70,9 +58,8 @@ module.exports = {
             path: '/attendances/:attendanceId/check-in',
             handler: 'api::attendance.attendance.checkIn',
             config: {
-                auth: {
-                    scope: ['authenticated']
-                },
+                policies: [],
+                middlewares: [],
             },
         },
     ]

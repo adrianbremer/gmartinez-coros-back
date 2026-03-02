@@ -28,7 +28,7 @@ module.exports = {
         if (result.coro) {
             setTimeout(async () => {
                 try {
-                    await strapi.service('api::attendance.attendance').createInvitationsForEvent(result.id);
+                    await strapi.service('api::attendance.attendance').createInvitationsForEvent(result.documentId);
                 } catch (error) {
                     strapi.log.error('Error creating invitations:', error);
                 }
@@ -55,6 +55,17 @@ module.exports = {
                 }
             }, 1000);
         }
+
+        // Crear invitaciones automáticamente si el evento tiene coro
+        if (result.coro) {
+            setTimeout(async () => {
+                try {
+                    await strapi.service('api::attendance.attendance').createInvitationsForEvent(result.documentId);
+                } catch (error) {
+                    strapi.log.error('Error creating invitations:', error);
+                }
+            }, 3000); // Ejecutar después del PDF
+        }
     },
 };
 
@@ -70,7 +81,7 @@ async function populateSongNames(data) {
                         populate: ['song']
                     });
 
-                    if (cantoComponent && cantoComponent.song && cantoComponent.song.name) {
+                    if (cantoComponent?.song?.name) {
                         // Actualizar el componente con el song_name
                         await strapi.db.query('event.canto-entry').update({
                             where: { id: canto.id },
@@ -91,7 +102,7 @@ async function populateSongNames(data) {
                             fields: ['name']
                         });
 
-                        if (songData && songData.name) {
+                        if (songData?.name) {
                             canto.song_name = songData.name;
                         }
                     }
