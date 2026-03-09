@@ -7,53 +7,56 @@
 const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController('api::event.event', ({ strapi }) => ({
-    // Endpoint personalizado para actualizar nombres de cantos en eventos existentes
-    async updateSongNames(ctx) {
-        try {
-            const events = await strapi.entityService.findMany('api::event.event', {
-                populate: {
-                    cantos: {
-                        populate: ['song']
-                    }
-                }
-            });
+    async find(ctx) {
+        const { data, meta } = await super.find(ctx);
 
-            let updatedCount = 0;
-
-            for (const event of events) {
-                let needsUpdate = false;
-
-                if (event.cantos && event.cantos.length > 0) {
-                    for (const canto of event.cantos) {
-                        if (canto.song && canto.song.name) {
-                            if (canto.song_name !== canto.song.name) {
-                                canto.song_name = canto.song.name;
-                                needsUpdate = true;
-                            }
-                        }
-                    }
-                }
-
-                if (needsUpdate) {
-                    await strapi.entityService.update('api::event.event', event.id, {
-                        data: {
-                            cantos: event.cantos
-                        }
-                    });
-                    updatedCount++;
-                }
-            }
-
-            ctx.body = {
-                success: true,
-                message: `Updated song names in ${updatedCount} events`,
-                updatedEventsCount: updatedCount
-            };
-
-        } catch (error) {
-            strapi.log.error('Error updating song names:', error);
-            ctx.throw(500, 'Error updating song names');
+        const userId = ctx.state.user?.id;
+        if (!userId) {
+            return { data, meta };
         }
+
+        // Resolve the person record linked to this user
+        const persons = await strapi.documents('api::person.person').findMany({
+            filters: { user: { id: userId } },
+            fields: ['documentId'],
+        });
+
+        const person = persons[0];
+        if (!person) {
+            return { data, meta };
+        }
+
+        // Collect event documentIds from the current page
+        const eventDocumentIds = data.map((e) => e.documentId);
+        if (eventDocumentIds.length === 0) {
+            return { data, meta };
+        }
+
+        // Fetch attendances for this person scoped to the returned events
+        const attendances = await strapi.documents('api::attendance.attendance').findMany({
+            filters: {
+                person: { documentId: person.documentId },
+                event: { documentId: { $in: eventDocumentIds } },
+            },
+            fields: ['documentId', 'status', 'response_date', 'notes', 'is_present', 'attended_date', 'invited_date', 'reminder_sent'],
+            populate: { event: { fields: ['documentId'] } },
+        });
+
+        // Index attendances by event documentId for O(1) lookup
+        const attendanceByEvent = {};
+        for (const attendance of attendances) {
+            if (attendance.event?.documentId) {
+                attendanceByEvent[attendance.event.documentId] = attendance;
+            }
+        }
+
+        // Append myAttendance to each event entry
+        const enrichedData = data.map((event) => ({
+            ...event,
+            my_attendance: attendanceByEvent[event.documentId] ?? null,
+        }));
+
+        return { data: enrichedData, meta };
     },
 
     // Generar PDF de portada para evento
@@ -136,41 +139,4 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
             ctx.throw(500, 'Fatal error generating PDF');
         }
     },
-
-    // Obtener el estado del PDF almacenado
-    async getPDFStatus(ctx) {
-        try {
-            const { id } = ctx.params;
-
-            if (!id) {
-                return ctx.badRequest('Event ID is required');
-            }
-
-            const event = await strapi.entityService.findOne('api::event.event', id, {
-                fields: ['name', 'pdf_path', 'pdf_filename', 'pdf_generated_at', 'pdf_error']
-            });
-
-            if (!event) {
-                return ctx.notFound('Event not found');
-            }
-
-            const pdfStatus = {
-                eventId: id,
-                eventName: event.name,
-                hasPDF: !!event.pdf_path,
-                filename: event.pdf_filename || null,
-                path: event.pdf_path || null,
-                generatedAt: event.pdf_generated_at || null,
-                error: event.pdf_error || null,
-                downloadUrl: event.pdf_path ? `${strapi.config.server.url}${event.pdf_path}` : null
-            };
-
-            ctx.body = { data: pdfStatus };
-
-        } catch (error) {
-            strapi.log.error('Error getting PDF status:', error);
-            ctx.throw(500, 'Error getting PDF status');
-        }
-    }
-
 }));
