@@ -8,6 +8,17 @@ const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController('api::event.event', ({ strapi }) => ({
     async find(ctx) {
+        // Append the Monterrey timezone offset (-06:00) so Strapi compares them correctly against UTC DB entries.
+        const dateFilter = ctx.query?.filters?.event_date;
+        if (dateFilter) {
+            if (typeof dateFilter.$gte === 'string' && dateFilter.$gte.length === 10) {
+                dateFilter.$gte = `${dateFilter.$gte}T00:00:00-06:00`;
+            }
+            if (typeof dateFilter.$lte === 'string' && dateFilter.$lte.length === 10) {
+                dateFilter.$lte = `${dateFilter.$lte}T23:59:59-06:00`;
+            }
+        }
+
         const { data, meta } = await super.find(ctx);
 
         const userId = ctx.state.user?.id;
