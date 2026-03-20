@@ -11,10 +11,14 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
         if (ctx.query?.filters?.event_date) {
             const dateFilter = ctx.query.filters.event_date;
             if (dateFilter.$gte) {
-                dateFilter.$gte = new Date(`${dateFilter.$gte}T00:00:00-06:00`).toISOString();
+                const gteDate = new Date(`${dateFilter.$gte}T00:00:00.000Z`);
+                gteDate.setUTCHours(gteDate.getUTCHours() + 6);
+                dateFilter.$gte = gteDate.toISOString();
             }
             if (dateFilter.$lte) {
-                dateFilter.$lte = new Date(`${dateFilter.$lte}T23:59:59.999-06:00`).toISOString();
+                const lteDate = new Date(`${dateFilter.$lte}T23:59:59.999Z`);
+                lteDate.setUTCHours(lteDate.getUTCHours() + 6);
+                dateFilter.$lte = lteDate.toISOString();
             }
         }
 
