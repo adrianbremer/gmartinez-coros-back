@@ -8,20 +8,18 @@ const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController('api::event.event', ({ strapi }) => ({
     async find(ctx) {
-        if (ctx.query?.filters?.event_date) {
-            const dateFilter = ctx.query.filters.event_date;
-            if (dateFilter.$gte) {
-                // 00:00:00 in Monterrey (UTC-6) is 06:00:00 in UTC the same day
-                dateFilter.$gte = new Date(`${dateFilter.$gte}T06:00:00.000Z`).toISOString();
-            }
-            if (dateFilter.$lte) {
-                // 23:59:59 in Monterrey (UTC-6) is 05:59:59 in UTC the NEXT day
-                const lteDate = new Date(`${dateFilter.$lte}T00:00:00.000Z`);
-                lteDate.setUTCDate(lteDate.getUTCDate() + 1); // add one day
-                lteDate.setUTCHours(5, 59, 59, 999);
-                dateFilter.$lte = lteDate.toISOString();
-            }
-        }
+        // if (ctx.query?.filters?.event_date) {
+        //     const dateFilter = ctx.query.filters.event_date;
+        //     if (dateFilter.$gte) {
+        //         const startDate = new Date(`${dateFilter.$gte}T06:00:00.000Z`);
+        //         dateFilter.$gte = startDate.toISOString();
+        //     }
+        //     if (dateFilter.$lte) {
+        //         const endDate = new Date(`${dateFilter.$lte}T06:00:00.000Z`);
+        //         endDate.setTime(endDate.getTime() + 24 * 60 * 60 * 1000 - 1); // Add 24 hours minus 1 millisecond
+        //         dateFilter.$lte = endDate.toISOString();
+        //     }
+        // }
 
         const { data, meta } = await super.find(ctx);
 
