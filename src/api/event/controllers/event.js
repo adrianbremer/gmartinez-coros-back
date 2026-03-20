@@ -11,13 +11,14 @@ module.exports = createCoreController('api::event.event', ({ strapi }) => ({
         if (ctx.query?.filters?.event_date) {
             const dateFilter = ctx.query.filters.event_date;
             if (dateFilter.$gte) {
-                const gteDate = new Date(`${dateFilter.$gte}T00:00:00.000Z`);
-                gteDate.setUTCHours(gteDate.getUTCHours() + 6);
-                dateFilter.$gte = gteDate.toISOString();
+                // 00:00:00 in Monterrey (UTC-6) is 06:00:00 in UTC the same day
+                dateFilter.$gte = new Date(`${dateFilter.$gte}T06:00:00.000Z`).toISOString();
             }
             if (dateFilter.$lte) {
-                const lteDate = new Date(`${dateFilter.$lte}T23:59:59.999Z`);
-                lteDate.setUTCHours(lteDate.getUTCHours() + 6);
+                // 23:59:59 in Monterrey (UTC-6) is 05:59:59 in UTC the NEXT day
+                const lteDate = new Date(`${dateFilter.$lte}T00:00:00.000Z`);
+                lteDate.setUTCDate(lteDate.getUTCDate() + 1); // add one day
+                lteDate.setUTCHours(5, 59, 59, 999);
                 dateFilter.$lte = lteDate.toISOString();
             }
         }
