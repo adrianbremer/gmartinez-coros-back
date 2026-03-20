@@ -8,18 +8,19 @@ const { createCoreController } = require('@strapi/strapi').factories;
 
 module.exports = createCoreController('api::event.event', ({ strapi }) => ({
     async find(ctx) {
-        // if (ctx.query?.filters?.event_date) {
-        //     const dateFilter = ctx.query.filters.event_date;
-        //     if (dateFilter.$gte) {
-        //         const startDate = new Date(`${dateFilter.$gte}T06:00:00.000Z`);
-        //         dateFilter.$gte = startDate.toISOString();
-        //     }
-        //     if (dateFilter.$lte) {
-        //         const endDate = new Date(`${dateFilter.$lte}T06:00:00.000Z`);
-        //         endDate.setTime(endDate.getTime() + 24 * 60 * 60 * 1000 - 1); // Add 24 hours minus 1 millisecond
-        //         dateFilter.$lte = endDate.toISOString();
-        //     }
-        // }
+        if (ctx.query?.filters?.event_date) {
+            const dateFilter = ctx.query.filters.event_date;
+
+            if (dateFilter.$gte) {
+                const startDate = new Date(`${dateFilter.$gte}T00:00:00.000Z`);
+                dateFilter.$gte = startDate.toISOString();
+            }
+
+            if (dateFilter.$lte) {
+                const endDate = new Date(`${dateFilter.$lte}T23:59:59.999Z`);
+                dateFilter.$lte = endDate.toISOString();
+            }
+        }
 
         const { data, meta } = await super.find(ctx);
 
